@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">VibeCheck</string>
+    <string name="settings">Settings</string>
+    <string name="back">Back</string>
+    <string name="reset_data">RESET DATA</string>
+    <string name="follow_system">System</string>
+    <string name="view_analytics">View Analytics</string>
+    <string name="todays_moves">Today\'s Moves</string>
+    <string name="net_vibe">Net Vibe</string>
+    <string name="net_cash">Net Cash</string>
+    <string name="income">INCOME</string>
+    <string name="expense">EXPENSE</string>
+    <string name="pick_your_mood">Pick Your Mood</string>
+    <string name="category_label">Category: %1$s</string>
+    <string name="save">SAVE</string>
+    <string name="analytics">Analytics</string>
+    <string name="happiness_roi">Happiness ROI</string>
+    <string name="stupidity_tax">Stupidity Tax</string>
+    <string name="spending_trend_last_30">Spending Trend (Last 30 Days)</string>
+    <string name="back_to_dashboard">Back to Dashboard</string>
+    <string name="cancel">Cancel</string>
+    <string name="swipe_down_hint">Scroll down for more</string>
+    <string name="delete">Delete</string>
+    <string name="confirm">Confirm</string>
+    <string name="confirm_delete_title">Delete Record</string>
+    <string name="confirm_delete_message">Are you sure to delete this record?</string>
+    <string name="confirm_reset_title">Confirm Reset</string>
+    <string name="confirm_reset_message">This will permanently erase all data.</string>
+    <string name="type_delete_hint">Type \"delete\" to confirm</string>
+    <string name="confirm_reset">Confirm Reset</string>
+    <string name="reset_success">Reset successful</string>
+    <string name="copyright">This software is licensed under the MIT License.</string>
+</resources>

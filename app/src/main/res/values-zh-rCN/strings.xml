@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">VibeCheck</string>
+    <string name="settings">设置</string>
+    <string name="back">返回</string>
+    <string name="reset_data">重置数据</string>
+    <string name="follow_system">跟随系统</string>
+    <string name="view_analytics">查看分析</string>
+    <string name="todays_moves">今日流水</string>
+    <string name="net_vibe">净快乐值</string>
+    <string name="net_cash">净支出</string>
+    <string name="income">收入</string>
+    <string name="expense">支出</string>
+    <string name="pick_your_mood">选择你的心情</string>
+    <string name="category_label">分类：%1$s</string>
+    <string name="save">保存</string>
+    <string name="analytics">分析</string>
+    <string name="happiness_roi">快乐 ROI</string>
+    <string name="stupidity_tax">愚蠢税</string>
+    <string name="spending_trend_last_30">近30天支出趋势</string>
+    <string name="back_to_dashboard">返回首页</string>
+    <string name="cancel">取消</string>
+    <string name="swipe_down_hint">向下滑动查看更多</string>
+    <string name="delete">删除</string>
+    <string name="confirm">确认</string>
+    <string name="confirm_delete_title">删除记录</string>
+    <string name="confirm_delete_message">确定删除这条记录吗？</string>
+    <string name="confirm_reset_title">确认重置</string>
+    <string name="confirm_reset_message">此操作将永久清除所有数据。</string>
+    <string name="type_delete_hint">输入“delete”以确认</string>
+    <string name="confirm_reset">确认重置</string>
+    <string name="reset_success">重置成功</string>
+    <string name="copyright">本软件基于 MIT 许可证发布。</string>
+</resources>

@@ -1,0 +1,18 @@
+- [x] Dependencies added to `libs.versions.toml` and `build.gradle.kts` (Navigation, Charts).
+- [x] Theme resources (Neo-Brutalism style) implemented in `ui/theme/`.
+- [x] `Transaction` data model defined.
+- [x] `FileRepository` implemented to read/write `accounting_records.txt`.
+- [x] `VibeButton` implemented.
+- [x] `VibeCard` implemented.
+- [x] `VibeInput` implemented.
+- [x] `MoodPicker` implemented.
+- [x] Add Entry Screen implemented (Amount, Type, Mood, Notes).
+- [x] Dashboard Screen implemented (Transaction list, Net Summary).
+- [x] Analytics Screen implemented (Charts).
+- [x] Settings Screen implemented (Theme toggle, Data reset).
+- [x] Navigation works correctly between screens.
+- [x] App launches and displays Dashboard.
+- [x] Adding a transaction saves data correctly.
+- [x] Dashboard updates with new transactions.
+- [x] Analytics charts update with new data.
+- [x] Data reset clears all records.

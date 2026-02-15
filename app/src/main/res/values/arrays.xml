@@ -1,0 +1,16 @@
+<resources>
+    <string-array name="categories">
+        <item>General</item>
+        <item>Food</item>
+        <item>Transport</item>
+        <item>Shopping</item>
+        <item>Entertainment</item>
+        <item>Bills</item>
+        <item>Health</item>
+        <item>Education</item>
+        <item>Salary</item>
+        <item>Bonus</item>
+        <item>Investment</item>
+        <item>Other</item>
+    </string-array>
+</resources>
