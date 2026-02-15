@@ -29,24 +29,62 @@ Built with **Jetpack Compose** and designed with a bold **Neo-Brutalism** aesthe
 
 ### File Structure
 ```
-app/src/main/java/ASIA/TPD/vibecheck/
-├── data/
-│   ├── FileRepository.kt       # Handles reading/writing to local file
-│   ├── Transaction.kt          # Data model for transactions
-│   └── TransactionViewModel.kt # State management for UI
-├── ui/
-│   ├── components/             # Reusable UI components (Neo-Brutalism style)
-│   │   ├── MoodPicker.kt
-│   │   ├── VibeButton.kt
-│   │   ├── VibeCard.kt
-│   │   └── VibeInput.kt
-│   ├── screens/                # Application screens
-│   │   ├── AddEntryScreen.kt
-│   │   ├── AnalyticsScreen.kt
-│   │   ├── DashboardScreen.kt
-│   │   └── SettingsScreen.kt
-│   └── theme/                  # Theme definitions (Colors, Type)
-└── MainActivity.kt             # App entry point and Navigation host
+.
+├── app/                                 # Android app module
+│   ├── build.gradle.kts                 # Module Gradle config
+│   └── src/                             # Module sources
+│       ├── main/                        # Main source set
+│       │   ├── AndroidManifest.xml      # Manifest and components
+│       │   ├── java/ASIA/TPD/vibecheck/ # Kotlin sources (package)
+│       │   │   ├── MainActivity.kt      # Entry point & NavHost
+│       │   │   ├── data/                # Data layer
+│       │   │   │   ├── FileRepository.kt       # Local file I/O
+│       │   │   │   ├── LocaleManager.kt        # Locale persistence
+│       │   │   │   ├── Transaction.kt          # Models & enums
+│       │   │   │   └── TransactionViewModel.kt # State + persistence
+│       │   │   └── ui/                  # UI layer
+│       │   │       ├── components/      # Reusable Compose widgets
+│       │   │       │   ├── MoodPicker.kt       # Emoji picker
+│       │   │       │   ├── VibeButton.kt       # Styled button
+│       │   │       │   ├── VibeCard.kt         # Shadowed card
+│       │   │       │   └── VibeInput.kt        # Text input
+│       │   │       ├── screens/         # App screens
+│       │   │       │   ├── AddEntryScreen.kt   # Add transaction
+│       │   │       │   ├── AnalyticsScreen.kt  # Charts & insights
+│       │   │       │   ├── DashboardScreen.kt  # Summary & list
+│       │   │       │   └── SettingsScreen.kt   # Locale & reset
+│       │   │       └── theme/           # Theme setup
+│       │   │           ├── Color.kt            # Colors
+│       │   │           ├── Theme.kt            # Material3 theme
+│       │   │           └── Type.kt             # Typography
+│       │   └── res/                        # Resources
+│       │       ├── values/                 # Default resources
+│       │       │   ├── strings.xml         # Strings (en)
+│       │       │   ├── colors.xml          # Color resources
+│       │       │   ├── themes.xml          # Legacy theme bridge
+│       │       │   └── arrays.xml          # Category arrays
+│       │       ├── values-zh-rCN/          # Simplified Chinese
+│       │       │   ├── strings.xml         # Strings (zh-CN)
+│       │       │   └── arrays.xml          # Localized arrays
+│       │       ├── mipmap-anydpi-v26/      # Adaptive icons
+│       │       ├── mipmap-*/               # Density icons
+│       │       ├── drawable/               # Drawables
+│       │       │   ├── ic_launcher_background.xml # Icon bg
+│       │       │   └── ic_launcher_foreground.xml # Icon fg
+│       │       └── xml/                    # Config XMLs
+│       │           ├── backup_rules.xml    # Auto backup rules
+│       │           └── data_extraction_rules.xml # Backup redaction
+│       ├── androidTest/                    # Instrumented tests
+│       └── test/                           # Unit tests
+├── build.gradle.kts                        # Root Gradle config
+├── settings.gradle.kts                     # Gradle modules
+├── gradle/                                 # Gradle wrapper
+│   └── wrapper/                            # Wrapper files
+├── gradle.properties                       # Build properties
+├── LICENSE                                 # MIT license
+├── README.md                               # Project docs
+├── gradlew                                 # Unix wrapper
+└── gradlew.bat                             # Windows wrapper
 ```
 
 ### Quick Start
@@ -87,24 +125,62 @@ This software is licensed under the **MIT License**. See the [LICENSE](./LICENSE
 
 ### 目录结构
 ```
-app/src/main/java/ASIA/TPD/vibecheck/
-├── data/
-│   ├── FileRepository.kt       # 处理本地文件的读写
-│   ├── Transaction.kt          # 交易数据模型
-│   └── TransactionViewModel.kt # UI 状态管理
-├── ui/
-│   ├── components/             # 可复用的 UI 组件 (新粗野主义风格)
-│   │   ├── MoodPicker.kt
-│   │   ├── VibeButton.kt
-│   │   ├── VibeCard.kt
-│   │   └── VibeInput.kt
-│   ├── screens/                # 应用页面
-│   │   ├── AddEntryScreen.kt
-│   │   ├── AnalyticsScreen.kt
-│   │   ├── DashboardScreen.kt
-│   │   └── SettingsScreen.kt
-│   └── theme/                  # 主题定义 (颜色, 排版)
-└── MainActivity.kt             # 应用入口及导航主机
+.
+├── app/                                 # Android 应用模块
+│   ├── build.gradle.kts                 # 模块 Gradle 配置
+│   └── src/                             # 模块源码
+│       ├── main/                        # 主源码集
+│       │   ├── AndroidManifest.xml      # 应用清单与组件
+│       │   ├── java/ASIA/TPD/vibecheck/ # Kotlin 源码包
+│       │   │   ├── MainActivity.kt      # 入口与导航宿主
+│       │   │   ├── data/                # 数据层
+│       │   │   │   ├── FileRepository.kt       # 本地文件读写
+│       │   │   │   ├── LocaleManager.kt        # 语言/区域设置持久化
+│       │   │   │   ├── Transaction.kt          # 数据模型与枚举
+│       │   │   │   └── TransactionViewModel.kt # 状态与持久化协调
+│       │   │   └── ui/                  # 界面层
+│       │   │       ├── components/      # 可复用 Compose 组件
+│       │   │       │   ├── MoodPicker.kt       # 心情选择器
+│       │   │       │   ├── VibeButton.kt       # 风格化按钮
+│       │   │       │   ├── VibeCard.kt         # 阴影卡片
+│       │   │       │   └── VibeInput.kt        # 文本输入
+│       │   │       ├── screens/         # 页面
+│       │   │       │   ├── AddEntryScreen.kt   # 新增记录
+│       │   │       │   ├── AnalyticsScreen.kt  # 图表分析
+│       │   │       │   ├── DashboardScreen.kt  # 汇总与列表
+│       │   │       │   └── SettingsScreen.kt   # 语言与数据重置
+│       │   │       └── theme/           # 主题配置
+│       │   │           ├── Color.kt            # 色板
+│       │   │           ├── Theme.kt            # Material3 主题封装
+│       │   │           └── Type.kt             # 排版
+│       │   └── res/                        # 资源目录
+│       │       ├── values/                 # 默认资源
+│       │       │   ├── strings.xml         # 英文字符串
+│       │       │   ├── colors.xml          # 颜色资源
+│       │       │   ├── themes.xml          # 主题桥接
+│       │       │   └── arrays.xml          # 分类等数组
+│       │       ├── values-zh-rCN/          # 简体中文资源
+│       │       │   ├── strings.xml         # 中文字符串
+│       │       │   └── arrays.xml          # 本地化数组
+│       │       ├── mipmap-anydpi-v26/      # 自适应图标
+│       │       ├── mipmap-*/               # 各密度图标
+│       │       ├── drawable/               # 可绘制资源
+│       │       │   ├── ic_launcher_background.xml # 图标背景
+│       │       │   └── ic_launcher_foreground.xml # 图标前景
+│       │       └── xml/                    # 其他 XML 配置
+│       │           ├── backup_rules.xml    # 备份规则
+│       │           └── data_extraction_rules.xml # 备份抽取规则
+│       ├── androidTest/                    # 仪器化测试
+│       └── test/                           # 单元测试
+├── build.gradle.kts                        # 根 Gradle 配置
+├── settings.gradle.kts                     # 模块设置
+├── gradle/                                 # Gradle 包装器
+│   └── wrapper/                            # 包装器文件
+├── gradle.properties                       # 构建属性
+├── LICENSE                                 # 许可证 (MIT)
+├── README.md                               # 项目说明
+├── gradlew                                 # Unix 包装脚本
+└── gradlew.bat                             # Windows 包装脚本
 ```
 
 ### 快速开始
@@ -145,24 +221,62 @@ app/src/main/java/ASIA/TPD/vibecheck/
 
 ### 파일 구조
 ```
-app/src/main/java/ASIA/TPD/vibecheck/
-├── data/
-│   ├── FileRepository.kt       # 로컬 파일 읽기/쓰기 처리
-│   ├── Transaction.kt          # 거래 데이터 모델
-│   └── TransactionViewModel.kt # UI 상태 관리
-├── ui/
-│   ├── components/             # 재사용 가능한 UI 컴포넌트 (네오 브루탈리즘 스타일)
-│   │   ├── MoodPicker.kt
-│   │   ├── VibeButton.kt
-│   │   ├── VibeCard.kt
-│   │   └── VibeInput.kt
-│   ├── screens/                # 애플리케이션 화면
-│   │   ├── AddEntryScreen.kt
-│   │   ├── AnalyticsScreen.kt
-│   │   ├── DashboardScreen.kt
-│   │   └── SettingsScreen.kt
-│   └── theme/                  # 테마 정의 (색상, 타이포그래피)
-└── MainActivity.kt             # 앱 진입점 및 내비게이션 호스트
+.
+├── app/                                 # Android 앱 모듈
+│   ├── build.gradle.kts                 # 모듈 Gradle 설정
+│   └── src/                             # 모듈 소스
+│       ├── main/                        # 메인 소스셋
+│       │   ├── AndroidManifest.xml      # 매니페스트 및 컴포넌트
+│       │   ├── java/ASIA/TPD/vibecheck/ # Kotlin 소스 패키지
+│       │   │   ├── MainActivity.kt      # 진입점 & 내비 호스트
+│       │   │   ├── data/                # 데이터 레이어
+│       │   │   │   ├── FileRepository.kt       # 로컬 파일 I/O
+│       │   │   │   ├── LocaleManager.kt        # 로케일 유지
+│       │   │   │   ├── Transaction.kt          # 모델/열거형
+│       │   │   │   └── TransactionViewModel.kt # 상태/영속 중재
+│       │   │   └── ui/                  # UI 레이어
+│       │   │       ├── components/      # 재사용 Compose 컴포넌트
+│       │   │       │   ├── MoodPicker.kt       # 이모지 선택
+│       │   │       │   ├── VibeButton.kt       # 스타일 버튼
+│       │   │       │   ├── VibeCard.kt         # 그림자 카드
+│       │   │       │   └── VibeInput.kt        # 텍스트 입력
+│       │   │       ├── screens/         # 화면
+│       │   │       │   ├── AddEntryScreen.kt   # 거래 추가
+│       │   │       │   ├── AnalyticsScreen.kt  # 차트/인사이트
+│       │   │       │   ├── DashboardScreen.kt  # 요약/목록
+│       │   │       │   └── SettingsScreen.kt   # 로케일/데이터 초기화
+│       │   │       └── theme/           # 테마 설정
+│       │   │           ├── Color.kt            # 색상 팔레트
+│       │   │           ├── Theme.kt            # Material3 테마
+│       │   │           └── Type.kt             # 타이포그래피
+│       │   └── res/                        # 리소스
+│       │       ├── values/                 # 기본 리소스
+│       │       │   ├── strings.xml         # 영문 문자열
+│       │       │   ├── colors.xml          # 색상 리소스
+│       │       │   ├── themes.xml          # 테마 브리지
+│       │       │   └── arrays.xml          # 카테고리 배열
+│       │       ├── values-zh-rCN/          # 간체 중국어 리소스
+│       │       │   ├── strings.xml         # 중국어 문자열
+│       │       │   └── arrays.xml          # 현지화 배열
+│       │       ├── mipmap-anydpi-v26/      # 적응형 아이콘
+│       │       ├── mipmap-*/               # 밀도별 아이콘
+│       │       ├── drawable/               # 드로어블
+│       │       │   ├── ic_launcher_background.xml # 아이콘 배경
+│       │       │   └── ic_launcher_foreground.xml # 아이콘 전경
+│       │       └── xml/                    # 기타 XML 설정
+│       │           ├── backup_rules.xml    # 백업 규칙
+│       │           └── data_extraction_rules.xml # 백업 추출 규칙
+│       ├── androidTest/                    # 계측 테스트
+│       └── test/                           # 단위 테스트
+├── build.gradle.kts                        # 루트 Gradle 설정
+├── settings.gradle.kts                     # 모듈 설정
+├── gradle/                                 # Gradle 래퍼
+│   └── wrapper/                            # 래퍼 파일
+├── gradle.properties                       # 빌드 속성
+├── LICENSE                                 # 라이선스 (MIT)
+├── README.md                               # 프로젝트 문서
+├── gradlew                                 # 유닉스 래퍼
+└── gradlew.bat                             # 윈도우 래퍼
 ```
 
 ### 빠른 시작
