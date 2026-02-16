@@ -37,17 +37,29 @@ import kotlinx.coroutines.launch
 import ASIA.TPD.vibecheck.ui.theme.NeoYellow
 import ASIA.TPD.vibecheck.ui.theme.NeoBlack
 
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.foundation.clickable
+import java.io.File
+import ASIA.TPD.vibecheck.ui.theme.NeoGreen
+
 @Composable
 fun SettingsScreen(
     viewModel: TransactionViewModel,
     onBackClick: () -> Unit
 ) {
     val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
     var current by remember { mutableStateOf(LocaleManager.getSavedLocaleTag(context)) }
     var showConfirm by remember { mutableStateOf(false) }
     var confirmText by remember { mutableStateOf("") }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    
+    val filePath = remember {
+        File(context.filesDir, "accounting_records.txt").absolutePath
+    }
+
     Scaffold(
         containerColor = NeoBackground,
         snackbarHost = {
@@ -116,6 +128,59 @@ fun SettingsScreen(
             }
 
             Spacer(modifier = Modifier.weight(1f))
+            
+            // Replay Tutorial
+            VibeButton(
+                text = stringResource(id = R.string.onboarding_replay),
+                onClick = {
+                    val prefs = context.getSharedPreferences("vibe_prefs", android.content.Context.MODE_PRIVATE)
+                    prefs.edit().putBoolean("onboarding_completed", false).commit()
+                    if (context is android.app.Activity) {
+                        val intent = android.content.Intent(context, ASIA.TPD.vibecheck.MainActivity::class.java).apply {
+                            addFlags(
+                                android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                                        android.content.Intent.FLAG_ACTIVITY_NEW_TASK or
+                                        android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            )
+                        }
+                        context.startActivity(intent)
+                        context.finish()
+                    }
+                },
+                color = NeoGreen,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            // Storage Location Display
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        clipboardManager.setText(AnnotatedString(filePath))
+                        scope.launch {
+                            snackbarHostState.showSnackbar(context.getString(R.string.copied_to_clipboard))
+                        }
+                    },
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = stringResource(id = R.string.storage_location),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = NeoBlack
+                )
+                Text(
+                    text = filePath,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = NeoBlack,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+                Text(
+                    text = stringResource(id = R.string.storage_location_hint),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = androidx.compose.ui.graphics.Color.Gray
+                )
+            }
 
             // Reset Data Button
             VibeButton(

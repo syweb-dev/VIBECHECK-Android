@@ -37,6 +37,7 @@ import ASIA.TPD.vibecheck.ui.theme.*
 @Composable
 fun AddEntryScreen(
     viewModel: TransactionViewModel = viewModel(),
+    isTableTop: Boolean = false,
     onNavigateBack: () -> Unit
 ) {
     var amountStr by remember { mutableStateOf("0") }
@@ -55,34 +56,9 @@ fun AddEntryScreen(
         )
     }
 
-    val scrollState = rememberScrollState()
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(NeoBackground)
-            .padding(16.dp)
-            .verticalScroll(scrollState),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Top: Back button
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start
-        ) {
-            VibeButton(
-                text = stringResource(id = R.string.back),
-                onClick = onNavigateBack,
-                color = NeoWhite
-            )
-        }
+    // --- Content Sections ---
 
-        Text(
-            text = stringResource(id = R.string.swipe_down_hint),
-            style = MaterialTheme.typography.labelSmall,
-            color = NeoBlack
-        )
-
+    val TopSection = @Composable {
         // 1. Income/Expense Toggle
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -120,7 +96,9 @@ fun AddEntryScreen(
             onClick = { showCategoryDialog = true },
             modifier = Modifier.fillMaxWidth()
         )
+    }
 
+    val BottomSection = @Composable {
         // 4. Mood Picker
         Text(
             text = stringResource(id = R.string.pick_your_mood),
@@ -187,38 +165,124 @@ fun AddEntryScreen(
             color = if (canSave) NeoYellow else NeoWhite,
             enabled = canSave
         )
+    }
 
-        if (showCategoryDialog) {
-            AlertDialog(
-                onDismissRequest = { showCategoryDialog = false },
-                title = {
-                    Text(text = stringResource(id = R.string.category_label, ""))
-                },
-                text = {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        categories.forEach { c ->
-                            VibeButton(
-                                text = c,
-                                onClick = {
-                                    note = c
-                                    showCategoryDialog = false
-                                },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
+    // --- Layout Logic ---
+
+    if (isTableTop) {
+        // Flex Mode: Split Screen
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(NeoBackground)
+                .padding(16.dp)
+        ) {
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                VibeButton(
+                    text = stringResource(id = R.string.back),
+                    onClick = onNavigateBack,
+                    color = NeoWhite
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Top Half (Display)
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                TopSection()
+            }
+
+            // Bottom Half (Controls)
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Wrap in scrollable box for safety
+                Box(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        BottomSection()
                     }
-                },
-                confirmButton = {},
-                dismissButton = {
-                    VibeButton(
-                        text = stringResource(id = ASIA.TPD.vibecheck.R.string.back),
-                        onClick = { showCategoryDialog = false }
-                    )
                 }
-            )
+            }
         }
+    } else {
+        // Standard Mode: Single Scrollable Column
+        val scrollState = rememberScrollState()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(NeoBackground)
+                .padding(16.dp)
+                .verticalScroll(scrollState),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                VibeButton(
+                    text = stringResource(id = R.string.back),
+                    onClick = onNavigateBack,
+                    color = NeoWhite
+                )
+            }
+
+            Text(
+                text = stringResource(id = R.string.swipe_down_hint),
+                style = MaterialTheme.typography.labelSmall,
+                color = NeoBlack
+            )
+
+            TopSection()
+            BottomSection()
+        }
+    }
+
+    if (showCategoryDialog) {
+        AlertDialog(
+            onDismissRequest = { showCategoryDialog = false },
+            title = {
+                Text(text = stringResource(id = R.string.category_label, ""))
+            },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    categories.forEach { c ->
+                        VibeButton(
+                            text = c,
+                            onClick = {
+                                note = c
+                                showCategoryDialog = false
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                VibeButton(
+                    text = stringResource(id = ASIA.TPD.vibecheck.R.string.back),
+                    onClick = { showCategoryDialog = false }
+                )
+            }
+        )
     }
 }
 

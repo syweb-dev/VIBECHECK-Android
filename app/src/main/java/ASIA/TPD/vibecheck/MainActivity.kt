@@ -19,29 +19,69 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.window.layout.FoldingFeature
+import androidx.window.layout.WindowInfoTracker
+import androidx.compose.runtime.*
+import androidx.core.view.WindowCompat
 import ASIA.TPD.vibecheck.data.TransactionViewModel
 import ASIA.TPD.vibecheck.ui.screens.AddEntryScreen
 import ASIA.TPD.vibecheck.ui.screens.AnalyticsScreen
 import ASIA.TPD.vibecheck.ui.screens.DashboardScreen
 import ASIA.TPD.vibecheck.ui.screens.SettingsScreen
+import ASIA.TPD.vibecheck.ui.screens.OnboardingScreen
 import ASIA.TPD.vibecheck.ui.theme.VIBECHECKTheme
+import android.content.Context
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         LocaleManager.applySavedLocale(this)
         enableEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false) // Explicitly requested for Edge-to-Edge
         setContent {
+            var isTableTop by remember { mutableStateOf(false) }
+
+            LaunchedEffect(Unit) {
+                WindowInfoTracker.getOrCreate(this@MainActivity)
+                    .windowLayoutInfo(this@MainActivity)
+                    .collect { newLayoutInfo ->
+                        val foldingFeature = newLayoutInfo.displayFeatures
+                            .filterIsInstance<FoldingFeature>()
+                            .firstOrNull()
+                        isTableTop = if (foldingFeature != null) {
+                            foldingFeature.state == FoldingFeature.State.HALF_OPENED &&
+                                    foldingFeature.orientation == FoldingFeature.Orientation.HORIZONTAL
+                        } else {
+                            false
+                        }
+                    }
+            }
+
             VIBECHECKTheme {
                 val navController = rememberNavController()
                 val viewModel: TransactionViewModel = viewModel()
+                
+                // Check if onboarding is completed
+                val sharedPrefs = getSharedPreferences("vibe_prefs", Context.MODE_PRIVATE)
+                val isOnboardingCompleted = sharedPrefs.getBoolean("onboarding_completed", false)
+                val startDest = if (isOnboardingCompleted) "dashboard" else "onboarding"
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "dashboard",
+                        startDestination = startDest,
                         modifier = Modifier.padding(innerPadding)
                     ) {
+                        composable("onboarding") {
+                            OnboardingScreen(
+                                onFinish = {
+                                    sharedPrefs.edit().putBoolean("onboarding_completed", true).apply()
+                                    navController.navigate("dashboard") {
+                                        popUpTo("onboarding") { inclusive = true }
+                                    }
+                                }
+                            )
+                        }
                         composable("dashboard") {
                             DashboardScreen(
                                 viewModel = viewModel,
@@ -53,6 +93,7 @@ class MainActivity : AppCompatActivity() {
                         composable("add_entry") {
                             AddEntryScreen(
                                 viewModel = viewModel,
+                                isTableTop = isTableTop,
                                 onNavigateBack = { navController.popBackStack() }
                             )
                         }

@@ -30,4 +30,15 @@
     <string name="confirm_reset">Confirm Reset</string>
     <string name="reset_success">Reset successful</string>
     <string name="copyright">This software is licensed under the MIT License.</string>
+    <string name="onboarding_welcome_title">Welcome to VibeCheck</string>
+    <string name="onboarding_welcome_desc">A high-saturation, emotionally-driven financial diary. Track your happiness ROI.</string>
+    <string name="onboarding_local_title">Privacy First</string>
+    <string name="onboarding_local_desc">We are 100% offline. No cloud, no tracking. Your data stays on your device.</string>
+    <string name="onboarding_storage_title">Data Storage</string>
+    <string name="onboarding_storage_desc">Your data is stored here:\n%1$s\nPlease back it up manually if needed.</string>
+    <string name="onboarding_start">Get Started</string>
+    <string name="onboarding_replay">Replay Tutorial</string>
+    <string name="storage_location">Data Location</string>
+    <string name="storage_location_hint">Tap to copy path</string>
+    <string name="copied_to_clipboard">Path copied to clipboard</string>
 </resources>
