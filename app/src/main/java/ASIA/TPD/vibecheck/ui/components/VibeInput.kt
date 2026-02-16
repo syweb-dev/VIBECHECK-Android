@@ -3,7 +3,7 @@ MIT License
 Copyright (c) 2026 ASIA TPD
 See the LICENSE file in the project root for full license information.
 */
-package ASIA.TPD.vibecheck.ui.components
+package top.lucanex.top.vibecheck.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -21,8 +21,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import ASIA.TPD.vibecheck.ui.theme.NeoBlack
-import ASIA.TPD.vibecheck.ui.theme.NeoWhite
+import top.lucanex.top.vibecheck.ui.theme.NeoBlack
+import top.lucanex.top.vibecheck.ui.theme.NeoWhite
 
 @Composable
 fun VibeInput(

@@ -7,7 +7,7 @@
     <string name="view_analytics">View Analytics</string>
     <string name="todays_moves">Today\'s Moves</string>
     <string name="net_vibe">Net Vibe</string>
-    <string name="net_cash">Net Cash</string>
+    <string name="net_cash">Balance</string>
     <string name="income">INCOME</string>
     <string name="expense">EXPENSE</string>
     <string name="pick_your_mood">Pick Your Mood</string>
@@ -38,7 +38,9 @@
     <string name="onboarding_storage_desc">Your data is stored here:\n%1$s\nPlease back it up manually if needed.</string>
     <string name="onboarding_start">Get Started</string>
     <string name="onboarding_replay">Replay Tutorial</string>
+    <string name="onboarding_currency_note">$ indicates money amount only, not a specific currency.</string>
     <string name="storage_location">Data Location</string>
     <string name="storage_location_hint">Tap to copy path</string>
     <string name="copied_to_clipboard">Path copied to clipboard</string>
+    <string name="privacy_policy">Privacy Policy</string>
 </resources>

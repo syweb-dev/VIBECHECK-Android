@@ -3,7 +3,7 @@ MIT License
 Copyright (c) 2026 ASIA TPD
 See the LICENSE file in the project root for full license information.
 */
-package ASIA.TPD.vibecheck.ui.theme
+package top.lucanex.top.vibecheck.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

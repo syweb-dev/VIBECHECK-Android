@@ -7,7 +7,7 @@
     <string name="view_analytics">查看分析</string>
     <string name="todays_moves">今日流水</string>
     <string name="net_vibe">净快乐值</string>
-    <string name="net_cash">净支出</string>
+    <string name="net_cash">余额</string>
     <string name="income">收入</string>
     <string name="expense">支出</string>
     <string name="pick_your_mood">选择你的心情</string>
@@ -19,7 +19,7 @@
     <string name="spending_trend_last_30">近30天支出趋势</string>
     <string name="back_to_dashboard">返回首页</string>
     <string name="cancel">取消</string>
-    <string name="swipe_down_hint">向下滑动查看更多</string>
+    <string name="swipe_down_hint">如果此页面不完全 可以往下滑试试</string>
     <string name="delete">删除</string>
     <string name="confirm">确认</string>
     <string name="confirm_delete_title">删除记录</string>
@@ -38,7 +38,9 @@
     <string name="onboarding_storage_desc">你的数据存储在这里：\n%1$s\n如果需要，请手动备份。</string>
     <string name="onboarding_start">开始使用</string>
     <string name="onboarding_replay">重新过新手教程</string>
+    <string name="onboarding_currency_note">本软件用“$”表示金额，只代表钱的数量，不代表具体币种。</string>
     <string name="storage_location">数据存储位置</string>
     <string name="storage_location_hint">点击复制路径</string>
     <string name="copied_to_clipboard">路径已复制到剪贴板</string>
+    <string name="privacy_policy">隐私协议</string>
 </resources>

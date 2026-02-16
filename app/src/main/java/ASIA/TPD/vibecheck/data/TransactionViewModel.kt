@@ -3,7 +3,7 @@ MIT License
 Copyright (c) 2026 ASIA TPD
 See the LICENSE file in the project root for full license information.
 */
-package ASIA.TPD.vibecheck.data
+package top.lucanex.top.vibecheck.data
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel

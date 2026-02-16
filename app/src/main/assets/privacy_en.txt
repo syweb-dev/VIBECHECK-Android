@@ -1,0 +1,45 @@
+VibeCheck Privacy Policy
+
+Effective date: 2026-02-16
+Version: 1.0
+
+This Privacy Policy is based on the current source code and applies to the VibeCheck Android app.
+
+1. Data We Process
+- Ledger data: transaction type, amount, timestamp, notes, mood score.
+- App settings: language preference, onboarding completion state.
+
+2. Data Sources
+- All data is produced by your explicit actions in the app.
+
+3. Purposes of Use
+- Display bill list, dashboard, and analytics.
+- Persist your language and onboarding state for a consistent experience.
+
+4. Storage Location & Method
+- Ledger data is stored in the app private file: accounting_records.txt.
+- Settings data is stored in the app private SharedPreferences: vibe_prefs.
+- Your data stays on your device by default and is not uploaded to any server.
+
+5. Network & Third-Party Sharing
+- No account system, cloud sync, or server upload is present in this version.
+- No advertising, analytics, or crash reporting SDKs are present.
+- We do not sell or share your personal data with third parties.
+
+6. Permissions & Device Access
+- The AndroidManifest does not declare sensitive permissions (contacts, location, camera, microphone, etc.).
+- The app operates within local files and local settings only.
+
+7. Backup & Migration
+- With android:allowBackup set to false, system automatic backup is disabled.
+- Success of device migration via system/vendor tools depends on their implementation and policies.
+
+8. Your Control
+- Use “Reset Data” in Settings to delete all ledger records.
+- Uninstalling the app typically removes its private directory data.
+
+9. Updates to This Policy
+- If future versions introduce network, accounts, sync, analytics, or ads, this policy will be updated accordingly.
+
+10. Contact
+- Questions? Please open an issue at https://github.com/syweb-dev/VIBECHECK-Android/issues
