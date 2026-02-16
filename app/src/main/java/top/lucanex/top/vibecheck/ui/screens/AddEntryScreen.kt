@@ -107,7 +107,7 @@ fun AddEntryScreen(
             "1", "2", "3",
             "4", "5", "6",
             "7", "8", "9",
-            ".", "0", "⌫"
+            ".", "0", "DEL"
         )
 
         LazyVerticalGrid(
@@ -269,7 +269,7 @@ fun AddEntryScreen(
 
 private fun updateAmount(current: String, input: String): String {
     return when (input) {
-        "⌫" -> {
+        "DEL", "⌫" -> {
             if (current.length > 1) current.dropLast(1) else "0"
         }
         "." -> {
