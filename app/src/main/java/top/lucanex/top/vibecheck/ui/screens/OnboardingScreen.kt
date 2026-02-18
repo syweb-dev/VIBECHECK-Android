@@ -170,8 +170,13 @@ fun OnboardingScreen(
 private fun getSystemString(context: Context, resId: Int, vararg args: Any): String {
     val systemConfig = Resources.getSystem().configuration
     val config = Configuration(context.resources.configuration)
-    config.setLocale(systemConfig.locales.get(0))
+    val locale = if (systemConfig.locales.isEmpty) Locale.getDefault() else systemConfig.locales[0]
+    config.setLocale(locale)
     
     val localizedContext = context.createConfigurationContext(config)
-    return localizedContext.getString(resId, *args)
+    return if (args.isEmpty()) {
+        localizedContext.getString(resId)
+    } else {
+        localizedContext.getString(resId, *args)
+    }
 }

@@ -23,6 +23,7 @@ import androidx.window.layout.FoldingFeature
 import androidx.window.layout.WindowInfoTracker
 import androidx.compose.runtime.*
 import androidx.core.view.WindowCompat
+import kotlinx.coroutines.flow.catch
 import top.lucanex.top.vibecheck.data.TransactionViewModel
 import top.lucanex.top.vibecheck.ui.screens.AddEntryScreen
 import top.lucanex.top.vibecheck.ui.screens.AnalyticsScreen
@@ -35,27 +36,32 @@ import android.content.Context
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         LocaleManager.applySavedLocale(this)
+        super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             var isTableTop by remember { mutableStateOf(false) }
 
             LaunchedEffect(Unit) {
-                WindowInfoTracker.getOrCreate(this@MainActivity)
-                    .windowLayoutInfo(this@MainActivity)
-                    .collect { newLayoutInfo ->
-                        val foldingFeature = newLayoutInfo.displayFeatures
-                            .filterIsInstance<FoldingFeature>()
-                            .firstOrNull()
-                        isTableTop = if (foldingFeature != null) {
-                            foldingFeature.state == FoldingFeature.State.HALF_OPENED &&
-                                    foldingFeature.orientation == FoldingFeature.Orientation.HORIZONTAL
-                        } else {
-                            false
+                runCatching {
+                    WindowInfoTracker.getOrCreate(this@MainActivity)
+                        .windowLayoutInfo(this@MainActivity)
+                        .catch { isTableTop = false }
+                        .collect { newLayoutInfo ->
+                            val foldingFeature = newLayoutInfo.displayFeatures
+                                .filterIsInstance<FoldingFeature>()
+                                .firstOrNull()
+                            isTableTop = if (foldingFeature != null) {
+                                foldingFeature.state == FoldingFeature.State.HALF_OPENED &&
+                                        foldingFeature.orientation == FoldingFeature.Orientation.HORIZONTAL
+                            } else {
+                                false
+                            }
                         }
-                    }
+                }.onFailure {
+                    isTableTop = false
+                }
             }
 
             VIBECHECKTheme {
