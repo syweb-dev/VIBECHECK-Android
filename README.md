@@ -2,6 +2,8 @@
 
 # VibeCheck Finance
 
+[![Latest Release](https://img.shields.io/github/v/release/syweb-dev/VIBECHECK-Android?label=Latest%20Release)](https://github.com/syweb-dev/VIBECHECK-Android/releases/latest)
+
 ## English
 
 ### Introduction
