@@ -49,9 +49,8 @@ class FileRepository(private val context: Context) {
         ioMutex.withLock {
             val file = File(context.filesDir, recurringFileName)
             try {
-                val safeNotes = rt.notes.replace("|", " ")
-                val line = "${rt.id}|${rt.type}|${rt.amount}|${safeNotes}|${rt.mood.score}|${rt.frequency}|${rt.dayOfMonth}|${rt.monthOfYear}|${rt.lastGeneratedTime}\n"
-                file.appendText(line)
+                val line = RecurringLineCodec.toLine(rt)
+                file.appendText(line + "\n")
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -62,20 +61,7 @@ class FileRepository(private val context: Context) {
          val list = mutableListOf<RecurringTransaction>()
          if (!file.exists()) return list
          file.forEachLine { line ->
-             val parts = line.split("|")
-             if (parts.size >= 9) {
-                 val id = parts[0]
-                 val type = try { TransactionType.valueOf(parts[1]) } catch (e: Exception) { TransactionType.EXPENSE }
-                 val amount = parts[2].toDoubleOrNull() ?: 0.0
-                 val notes = parts[3]
-                 val moodScore = parts[4].toIntOrNull() ?: 3
-                 val mood = Mood.fromScore(moodScore)
-                 val freq = try { Frequency.valueOf(parts[5]) } catch (e: Exception) { Frequency.MONTHLY }
-                 val day = parts[6].toIntOrNull() ?: 1
-                 val month = parts[7].toIntOrNull() ?: 1
-                 val lastGen = parts[8].toLongOrNull() ?: 0L
-                 list.add(RecurringTransaction(id, type, amount, notes, mood, freq, day, month, lastGen))
-             }
+             RecurringLineCodec.fromLineSafe(line)?.let { list.add(it) }
          }
          return list
     }
@@ -125,13 +111,19 @@ class FileRepository(private val context: Context) {
 
                 if (shouldGenerate) {
                     changesMade = true
-                    val safeNotes = rt.notes.replace("|", " ")
                     // Append directly to transaction file (we are already inside ioMutex lock)
                     // But we should verify we aren't duplicating.
                     // This logic assumes we only run this once per session or it's safe.
                     // The mutex protects concurrent access.
-                    val newLine = "${java.util.UUID.randomUUID()}|$now|${rt.type}|${rt.amount}|$safeNotes|${rt.mood.score}\n"
-                    tFile.appendText(newLine)
+                    val newTransaction = Transaction(
+                        id = java.util.UUID.randomUUID().toString(),
+                        date = now,
+                        type = rt.type,
+                        amount = rt.amount,
+                        notes = rt.notes,
+                        mood = rt.mood
+                    )
+                    tFile.appendText(TransactionLineCodec.toLine(newTransaction) + "\n")
                     rt.copy(lastGeneratedTime = now)
                 } else {
                     rt
@@ -142,9 +134,7 @@ class FileRepository(private val context: Context) {
                 val tmp = File(context.filesDir, "${recurringFileName}.tmp")
                 tmp.writeText("")
                 updatedList.forEach { rt ->
-                    val safeNotes = rt.notes.replace("|", " ")
-                    val line = "${rt.id}|${rt.type}|${rt.amount}|${safeNotes}|${rt.mood.score}|${rt.frequency}|${rt.dayOfMonth}|${rt.monthOfYear}|${rt.lastGeneratedTime}\n"
-                    tmp.appendText(line)
+                    tmp.appendText(RecurringLineCodec.toLine(rt) + "\n")
                 }
                 try {
                     Files.move(
@@ -186,18 +176,7 @@ class FileRepository(private val context: Context) {
             val transactions = mutableListOf<Transaction>()
             try {
                 file.forEachLine { line ->
-                    val parts = line.split("|")
-                    if (parts.size >= 6) {
-                        val id = parts[0]
-                        val date = parts[1].toLongOrNull() ?: 0L
-                        val type = try { TransactionType.valueOf(parts[2]) } catch (e: Exception) { TransactionType.EXPENSE }
-                        val amount = parts[3].toDoubleOrNull() ?: 0.0
-                        val notes = parts[4]
-                        val moodScore = parts[5].toIntOrNull() ?: 3
-                        val mood = Mood.fromScore(moodScore)
-                        
-                        transactions.add(Transaction(id, date, type, amount, notes, mood))
-                    }
+                    TransactionLineCodec.fromLineSafe(line)?.let { transactions.add(it) }
                 }
             } catch (e: IOException) {
                 e.printStackTrace()
@@ -210,9 +189,8 @@ class FileRepository(private val context: Context) {
         ioMutex.withLock {
             val file = File(context.filesDir, fileName)
             try {
-                val safeNotes = transaction.notes.replace("|", " ")
-                val line = "${transaction.id}|${transaction.date}|${transaction.type}|${transaction.amount}|${safeNotes}|${transaction.mood.score}\n"
-                file.appendText(line)
+                val line = TransactionLineCodec.toLine(transaction)
+                file.appendText(line + "\n")
             } catch (e: IOException) {
                 e.printStackTrace()
             }
