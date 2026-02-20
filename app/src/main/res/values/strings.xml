@@ -56,4 +56,5 @@
     <string name="frequency_daily">Daily</string>
     <string name="frequency_monthly">Monthly</string>
     <string name="frequency_yearly">Yearly</string>
+    <string name="monthly_income">Monthly Income</string>
 </resources>

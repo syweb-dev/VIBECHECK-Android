@@ -70,6 +70,21 @@ fun DashboardScreen(
         }.sumOf { it.amount }
     }
 
+    val currentMonthIncome = remember(transactions) {
+        val now = Calendar.getInstance()
+        val currentYear = now.get(Calendar.YEAR)
+        val currentMonth = now.get(Calendar.MONTH)
+        
+        transactions.filter { 
+            if (it.type != TransactionType.INCOME) return@filter false
+            
+            val transCal = Calendar.getInstance()
+            transCal.timeInMillis = it.date
+            transCal.get(Calendar.YEAR) == currentYear && 
+            transCal.get(Calendar.MONTH) == currentMonth
+        }.sumOf { it.amount }
+    }
+
     val netHappiness = remember(todayTransactions) {
         todayTransactions.sumOf { it.mood.score }
     }
@@ -214,6 +229,28 @@ fun DashboardScreen(
                             )
                             Text(
                                 text = "$${String.format("%.0f", netSpending)}",
+                                style = MaterialTheme.typography.displayMedium,
+                                fontWeight = FontWeight.Black
+                            )
+                        }
+                    }
+
+                    // Monthly Income Card
+                    VibeCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = NeoGreen
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.monthly_income),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "$${currentMonthIncome.toInt()}",
                                 style = MaterialTheme.typography.displayMedium,
                                 fontWeight = FontWeight.Black
                             )

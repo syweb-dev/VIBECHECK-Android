@@ -56,4 +56,5 @@
     <string name="frequency_daily">每日</string>
     <string name="frequency_monthly">每月</string>
     <string name="frequency_yearly">每年</string>
+    <string name="monthly_income">本月收入</string>
 </resources>
