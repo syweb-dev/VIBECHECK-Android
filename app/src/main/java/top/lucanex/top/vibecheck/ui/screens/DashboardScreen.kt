@@ -11,9 +11,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -42,8 +48,26 @@ fun DashboardScreen(
     onNavigateToSettings: () -> Unit
 ) {
     val transactions by viewModel.transactions.collectAsState()
+    val budget by viewModel.budget.collectAsState()
+    var showBudgetDialog by remember { mutableStateOf(false) }
+    
     val todayTransactions = remember(transactions) {
         transactions.filter { isToday(it.date) }
+    }
+
+    val currentMonthExpenses = remember(transactions) {
+        val now = Calendar.getInstance()
+        val currentYear = now.get(Calendar.YEAR)
+        val currentMonth = now.get(Calendar.MONTH)
+        
+        transactions.filter { 
+            if (it.type != TransactionType.EXPENSE) return@filter false
+            
+            val transCal = Calendar.getInstance()
+            transCal.timeInMillis = it.date
+            transCal.get(Calendar.YEAR) == currentYear && 
+            transCal.get(Calendar.MONTH) == currentMonth
+        }.sumOf { it.amount }
     }
 
     val netHappiness = remember(todayTransactions) {
@@ -95,45 +119,105 @@ fun DashboardScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                VibeCard(
+                // Left Column: Net Vibe & Budget
+                Column(
                     modifier = Modifier.weight(1f),
-                    color = NeoBlue
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxWidth()
+                    // Net Vibe Card
+                    VibeCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = NeoBlue
                     ) {
-                        Text(
-                            text = stringResource(id = R.string.net_vibe),
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "$netHappiness",
-                            style = MaterialTheme.typography.displayMedium,
-                            fontWeight = FontWeight.Black
-                        )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.net_vibe),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "$netHappiness",
+                                style = MaterialTheme.typography.displayMedium,
+                                fontWeight = FontWeight.Black
+                            )
+                        }
+                    }
+
+                    // Budget Card
+                    VibeCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = NeoWhite
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.monthly_budget),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Box(contentAlignment = Alignment.BottomEnd, modifier = Modifier.fillMaxWidth()) {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    val remaining = (budget - currentMonthExpenses).toInt()
+                                    val isOver = currentMonthExpenses > budget
+                                    
+                                    // Display remaining amount (or overage) as the main large text
+                                    Text(
+                                        text = if (isOver) "-${(currentMonthExpenses - budget).toInt()}" else "$remaining",
+                                        style = MaterialTheme.typography.headlineMedium,
+                                        fontWeight = FontWeight.Black,
+                                        color = if (isOver) Color.Red else Color.Unspecified
+                                    )
+                                    
+                                    // Display total budget as smaller text
+                                    Text(
+                                        text = stringResource(id = R.string.budget_amount, budget.toInt()),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = NeoBlack.copy(alpha = 0.6f)
+                                    )
+                                }
+                                IconButton(
+                                    onClick = { showBudgetDialog = true },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(Icons.Default.Edit, contentDescription = stringResource(id = R.string.edit_budget_desc), tint = NeoBlack)
+                                }
+                            }
+                        }
                     }
                 }
 
-                VibeCard(
+                // Right Column: Net Cash (and maybe other future stats)
+                Column(
                     modifier = Modifier.weight(1f),
-                    color = NeoPink
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxWidth()
+                    VibeCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = NeoPink
                     ) {
-                        Text(
-                            text = stringResource(id = R.string.net_cash),
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "$${String.format("%.0f", netSpending)}",
-                            style = MaterialTheme.typography.displayMedium,
-                            fontWeight = FontWeight.Black
-                        )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.net_cash),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "$${String.format("%.0f", netSpending)}",
+                                style = MaterialTheme.typography.displayMedium,
+                                fontWeight = FontWeight.Black
+                            )
+                        }
                     }
                 }
             }
@@ -163,6 +247,40 @@ fun DashboardScreen(
                     )
                 }
             }
+        }
+
+        if (showBudgetDialog) {
+            var budgetInput by remember { mutableStateOf(if (budget > 0) budget.toString() else "") }
+            AlertDialog(
+                onDismissRequest = { showBudgetDialog = false },
+                title = { Text(stringResource(id = R.string.set_budget_title)) },
+                text = {
+                    OutlinedTextField(
+                        value = budgetInput,
+                        onValueChange = { if (it.all { c -> c.isDigit() || c == '.' }) budgetInput = it },
+                        label = { Text(stringResource(id = R.string.amount_hint)) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true
+                    )
+                },
+                confirmButton = {
+                    VibeButton(
+                        text = stringResource(id = R.string.save),
+                        onClick = {
+                            val newBudget = budgetInput.toDoubleOrNull() ?: 0.0
+                            viewModel.setBudget(newBudget)
+                            showBudgetDialog = false
+                        },
+                        color = NeoYellow
+                    )
+                },
+                dismissButton = {
+                    VibeButton(
+                        text = stringResource(id = R.string.cancel),
+                        onClick = { showBudgetDialog = false }
+                    )
+                }
+            )
         }
     }
 }

@@ -43,4 +43,17 @@
     <string name="storage_location_hint">點擊複製路徑</string>
     <string name="copied_to_clipboard">路徑已複製到剪貼簿</string>
     <string name="privacy_policy">隱私協議</string>
+    <string name="monthly_budget">月度預算</string>
+    <string name="budget_amount">預算: %1$s</string>
+    <string name="budget_over">超支: %1$s</string>
+    <string name="budget_left">剩餘: %1$s</string>
+    <string name="set_budget_title">設定月度預算</string>
+    <string name="amount_hint">金額</string>
+    <string name="edit_budget_desc">編輯預算</string>
+    <string name="fixed_recurring">固定 / 週期性</string>
+    <string name="day_hint">日 (1-31)</string>
+    <string name="month_hint">月 (1-12)</string>
+    <string name="frequency_daily">每日</string>
+    <string name="frequency_monthly">每月</string>
+    <string name="frequency_yearly">每年</string>
 </resources>

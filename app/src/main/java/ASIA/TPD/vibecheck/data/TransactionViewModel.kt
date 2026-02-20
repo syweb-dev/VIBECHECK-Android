@@ -20,8 +20,13 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
     private val _transactions = MutableStateFlow<List<Transaction>>(emptyList())
     val transactions: StateFlow<List<Transaction>> = _transactions.asStateFlow()
 
+    private val _budget = MutableStateFlow(0.0)
+    val budget: StateFlow<Double> = _budget.asStateFlow()
+
     init {
         loadTransactions()
+        loadBudget()
+        checkRecurringTransactions()
     }
 
     private fun loadTransactions() {
@@ -30,10 +35,39 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
+    private fun loadBudget() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _budget.value = repository.getBudget()
+        }
+    }
+
+    private fun checkRecurringTransactions() {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.checkAndGenerateRecurringTransactions()
+            _transactions.value = repository.getAllTransactions()
+        }
+    }
+
     fun addTransaction(transaction: Transaction) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.addTransaction(transaction)
             _transactions.value = repository.getAllTransactions()
+        }
+    }
+
+    fun addRecurringTransaction(rt: RecurringTransaction) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.addRecurringTransaction(rt)
+            // Check if the new rule triggers immediate generation
+            repository.checkAndGenerateRecurringTransactions()
+            _transactions.value = repository.getAllTransactions()
+        }
+    }
+
+    fun setBudget(amount: Double) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.setBudget(amount)
+            _budget.value = amount
         }
     }
 
@@ -48,6 +82,7 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
         viewModelScope.launch(Dispatchers.IO) {
             repository.clearAll()
             _transactions.value = emptyList()
+            _budget.value = 0.0
         }
     }
 }

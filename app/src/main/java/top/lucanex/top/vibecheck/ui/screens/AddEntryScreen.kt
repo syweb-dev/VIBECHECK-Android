@@ -12,7 +12,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -20,13 +24,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.res.stringResource
 import top.lucanex.top.vibecheck.R
+import top.lucanex.top.vibecheck.data.Frequency
 import top.lucanex.top.vibecheck.data.Mood
+import top.lucanex.top.vibecheck.data.RecurringTransaction
 import top.lucanex.top.vibecheck.data.Transaction
 import top.lucanex.top.vibecheck.data.TransactionType
 import top.lucanex.top.vibecheck.data.TransactionViewModel
@@ -45,6 +52,12 @@ fun AddEntryScreen(
     var selectedMood by remember { mutableStateOf(Mood.NEUTRAL) }
     var note by remember { mutableStateOf("General") }
     var showCategoryDialog by remember { mutableStateOf(false) }
+    
+    var isRecurring by remember { mutableStateOf(false) }
+    var recurringFrequency by remember { mutableStateOf(Frequency.MONTHLY) }
+    var recurringDay by remember { mutableStateOf("1") }
+    var recurringMonth by remember { mutableStateOf("1") }
+
     val context = androidx.compose.ui.platform.LocalContext.current
     val categories by remember {
         mutableStateOf(
@@ -92,6 +105,74 @@ fun AddEntryScreen(
     }
 
     val BottomSection = @Composable {
+        // Recurring Option
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = isRecurring,
+                onCheckedChange = { isRecurring = it },
+                colors = CheckboxDefaults.colors(checkedColor = NeoBlack)
+            )
+            Text(
+                text = stringResource(id = R.string.fixed_recurring),
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        if (isRecurring) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Frequency.entries.forEach { freq ->
+                        val isSelected = recurringFrequency == freq
+                        val freqText = when(freq) {
+                            Frequency.DAILY -> stringResource(id = R.string.frequency_daily)
+                            Frequency.MONTHLY -> stringResource(id = R.string.frequency_monthly)
+                            Frequency.YEARLY -> stringResource(id = R.string.frequency_yearly)
+                        }
+                        VibeButton(
+                            text = freqText,
+                            onClick = { recurringFrequency = freq },
+                            modifier = Modifier.weight(1f),
+                            color = if (isSelected) NeoYellow else NeoWhite
+                        )
+                    }
+                }
+                
+                if (recurringFrequency == Frequency.MONTHLY || recurringFrequency == Frequency.YEARLY) {
+                    OutlinedTextField(
+                        value = recurringDay,
+                        onValueChange = { if (it.all { c -> c.isDigit() }) recurringDay = it },
+                        label = { Text(stringResource(id = R.string.day_hint)) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                }
+                
+                if (recurringFrequency == Frequency.YEARLY) {
+                    OutlinedTextField(
+                        value = recurringMonth,
+                        onValueChange = { if (it.all { c -> c.isDigit() }) recurringMonth = it },
+                        label = { Text(stringResource(id = R.string.month_hint)) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                }
+            }
+        }
+
         Text(
             text = stringResource(id = R.string.pick_your_mood),
             style = MaterialTheme.typography.titleMedium,
@@ -140,14 +221,32 @@ fun AddEntryScreen(
             onClick = {
                 val amount = amountStr.toDoubleOrNull() ?: 0.0
                 if (amount > 0) {
+                    val now = System.currentTimeMillis()
                     val transaction = Transaction(
-                        date = System.currentTimeMillis(),
+                        date = now,
                         type = selectedType,
                         amount = amount,
                         notes = note,
                         mood = selectedMood
                     )
                     viewModel.addTransaction(transaction)
+
+                    if (isRecurring) {
+                        val day = recurringDay.toIntOrNull() ?: 1
+                        val month = recurringMonth.toIntOrNull() ?: 1
+                        val rt = RecurringTransaction(
+                            type = selectedType,
+                            amount = amount,
+                            notes = note,
+                            mood = selectedMood,
+                            frequency = recurringFrequency,
+                            dayOfMonth = day,
+                            monthOfYear = month,
+                            lastGeneratedTime = now
+                        )
+                        viewModel.addRecurringTransaction(rt)
+                    }
+
                     onNavigateBack()
                 }
             },

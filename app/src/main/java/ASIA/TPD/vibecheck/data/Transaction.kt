@@ -25,6 +25,22 @@ enum class Mood(val emoji: String, val score: Int) {
     }
 }
 
+enum class Frequency {
+    DAILY, MONTHLY, YEARLY
+}
+
+data class RecurringTransaction(
+    val id: String = UUID.randomUUID().toString(),
+    val type: TransactionType,
+    val amount: Double,
+    val notes: String,
+    val mood: Mood,
+    val frequency: Frequency,
+    val dayOfMonth: Int = 1, // 1-31, used for MONTHLY and YEARLY
+    val monthOfYear: Int = 1, // 1-12, used for YEARLY
+    val lastGeneratedTime: Long = 0L
+)
+
 data class Transaction(
     val id: String = UUID.randomUUID().toString(),
     val date: Long, // Epoch millis

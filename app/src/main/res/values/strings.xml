@@ -43,4 +43,17 @@
     <string name="storage_location_hint">Tap to copy path</string>
     <string name="copied_to_clipboard">Path copied to clipboard</string>
     <string name="privacy_policy">Privacy Policy</string>
+    <string name="monthly_budget">Monthly Budget</string>
+    <string name="budget_amount">Budget: %1$s</string>
+    <string name="budget_over">Over: %1$s</string>
+    <string name="budget_left">Left: %1$s</string>
+    <string name="set_budget_title">Set Monthly Budget</string>
+    <string name="amount_hint">Amount</string>
+    <string name="edit_budget_desc">Edit Budget</string>
+    <string name="fixed_recurring">Fixed / Recurring</string>
+    <string name="day_hint">Day (1-31)</string>
+    <string name="month_hint">Month (1-12)</string>
+    <string name="frequency_daily">Daily</string>
+    <string name="frequency_monthly">Monthly</string>
+    <string name="frequency_yearly">Yearly</string>
 </resources>

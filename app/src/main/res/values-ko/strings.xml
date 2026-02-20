@@ -43,4 +43,17 @@
     <string name="storage_location_hint">경로 복사하려면 탭하세요</string>
     <string name="copied_to_clipboard">경로가 클립보드에 복사되었습니다</string>
     <string name="privacy_policy">개인정보 처리방침</string>
+    <string name="monthly_budget">월간 예산</string>
+    <string name="budget_amount">예산: %1$s</string>
+    <string name="budget_over">초과: %1$s</string>
+    <string name="budget_left">잔액: %1$s</string>
+    <string name="set_budget_title">월간 예산 설정</string>
+    <string name="amount_hint">금액</string>
+    <string name="edit_budget_desc">예산 편집</string>
+    <string name="fixed_recurring">고정 / 반복</string>
+    <string name="day_hint">일 (1-31)</string>
+    <string name="month_hint">월 (1-12)</string>
+    <string name="frequency_daily">매일</string>
+    <string name="frequency_monthly">매월</string>
+    <string name="frequency_yearly">매년</string>
 </resources>
