@@ -12,7 +12,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "top.lucanex.top.vibecheck"
+        applicationId = "top.lucanex.vibecheck.app"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
@@ -22,6 +22,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(

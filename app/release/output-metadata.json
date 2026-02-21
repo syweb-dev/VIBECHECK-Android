@@ -4,7 +4,7 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "top.lucanex.top.vibecheck",
+  "applicationId": "top.lucanex.vibecheck.app",
   "variantName": "release",
   "elements": [
     {
