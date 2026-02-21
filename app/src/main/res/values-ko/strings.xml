@@ -33,7 +33,7 @@
     <string name="onboarding_welcome_title">VibeCheck에 오신 것을 환영합니다</string>
     <string name="onboarding_welcome_desc">고채도 감성 재무 다이어리. 당신의 행복 수익률을 추적하세요.</string>
     <string name="onboarding_local_title">프라이버시 우선</string>
-    <string name="onboarding_local_desc">100% 오프라인입니다. 클라우드 없음, 추적 없음. 데이터는 기기에만 저장됩니다.</string>
+    <string name="onboarding_local_desc">100%% 오프라인입니다. 클라우드 없음, 추적 없음. 데이터는 기기에만 저장됩니다.</string>
     <string name="onboarding_storage_title">데이터 저장소</string>
     <string name="onboarding_storage_desc">데이터는 여기에 저장됩니다:\n%1$s\n필요한 경우 수동으로 백업하세요.</string>
     <string name="onboarding_start">시작하기</string>
@@ -56,4 +56,5 @@
     <string name="frequency_daily">매일</string>
     <string name="frequency_monthly">매월</string>
     <string name="frequency_yearly">매년</string>
+    <string name="monthly_income">월간 수입</string>
 </resources>

@@ -228,7 +228,7 @@ fun DashboardScreen(
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "$${String.format("%.0f", netSpending)}",
+                                text = "$${String.format(Locale.getDefault(), "%.0f", netSpending)}",
                                 style = MaterialTheme.typography.displayMedium,
                                 fontWeight = FontWeight.Black
                             )

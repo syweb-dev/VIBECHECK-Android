@@ -33,7 +33,7 @@
     <string name="onboarding_welcome_title">VibeCheckへようこそ</string>
     <string name="onboarding_welcome_desc">高彩度で感情主導の財務日記。あなたの幸福 ROI を追跡しましょう。</string>
     <string name="onboarding_local_title">プライバシー第一</string>
-    <string name="onboarding_local_desc">私たちは 100% オフラインです。クラウドなし、追跡なし。データはデバイスにのみ保存されます。</string>
+    <string name="onboarding_local_desc">私たちは 100%% オフラインです。クラウドなし、追跡なし。データはデバイスにのみ保存されます。</string>
     <string name="onboarding_storage_title">データストレージ</string>
     <string name="onboarding_storage_desc">データはここに保存されます:\n%1$s\n必要に応じて手動でバックアップしてください。</string>
     <string name="onboarding_start">始める</string>
@@ -56,4 +56,5 @@
     <string name="frequency_daily">毎日</string>
     <string name="frequency_monthly">毎月</string>
     <string name="frequency_yearly">毎年</string>
+    <string name="monthly_income">月間収入</string>
 </resources>

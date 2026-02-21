@@ -121,7 +121,7 @@ fun SettingsScreen(
                             current = "system"
                             LocaleManager.setLocale(context, "system")
                         },
-                        color = if (current == "system") NeoWhite else NeoWhite,
+                        color = if (current == "system") NeoYellow else NeoWhite,
                         modifier = Modifier.weight(1f)
                     )
                     VibeButton(
@@ -130,7 +130,7 @@ fun SettingsScreen(
                             current = "zh-CN"
                             LocaleManager.setLocale(context, "zh-CN")
                         },
-                        color = NeoWhite,
+                        color = if (current == "zh-CN") NeoYellow else NeoWhite,
                         modifier = Modifier.weight(1f)
                     )
                     VibeButton(
@@ -139,7 +139,7 @@ fun SettingsScreen(
                             current = "en"
                             LocaleManager.setLocale(context, "en")
                         },
-                        color = NeoWhite,
+                        color = if (current == "en") NeoYellow else NeoWhite,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -154,7 +154,7 @@ fun SettingsScreen(
                             current = "zh-TW"
                             LocaleManager.setLocale(context, "zh-TW")
                         },
-                        color = NeoWhite,
+                        color = if (current == "zh-TW") NeoYellow else NeoWhite,
                         modifier = Modifier.weight(1f)
                     )
                     VibeButton(
@@ -163,7 +163,7 @@ fun SettingsScreen(
                             current = "ko"
                             LocaleManager.setLocale(context, "ko")
                         },
-                        color = NeoWhite,
+                        color = if (current == "ko") NeoYellow else NeoWhite,
                         modifier = Modifier.weight(1f)
                     )
                     VibeButton(
@@ -172,7 +172,7 @@ fun SettingsScreen(
                             current = "ja"
                             LocaleManager.setLocale(context, "ja")
                         },
-                        color = NeoWhite,
+                        color = if (current == "ja") NeoYellow else NeoWhite,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -184,7 +184,7 @@ fun SettingsScreen(
                 text = stringResource(id = R.string.onboarding_replay),
                 onClick = {
                     val prefs = context.getSharedPreferences("vibe_prefs", android.content.Context.MODE_PRIVATE)
-                    prefs.edit().putBoolean("onboarding_completed", false).commit()
+                    prefs.edit().putBoolean("onboarding_completed", false).apply()
                     val pm = context.packageManager
                     val launch = pm.getLaunchIntentForPackage("top.lucanex.top.vibecheck")
                         ?: pm.getLaunchIntentForPackage(context.packageName)
