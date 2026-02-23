@@ -2,9 +2,7 @@ name: Discord Notify
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [ main, master ]
   release:
     types: [published]
 
@@ -15,81 +13,85 @@ jobs:
       - name: Send Discord notification
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          EVENT_NAME: ${{ github.event_name }}
-          REPO: ${{ github.repository }}
-          ACTOR: ${{ github.actor }}
-          REF_NAME: ${{ github.ref_name }}
-          SERVER_URL: ${{ github.server_url }}
         run: |
-          set -e
+          set -euo pipefail
 
-          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
-            echo "Missing DISCORD_WEBHOOK_URL secret"
+          if [ -z "${DISCORD_WEBHOOK_URL:-}" ]; then
+            echo "ERROR: Missing DISCORD_WEBHOOK_URL secret"
             exit 1
           fi
 
-          if [ "$EVENT_NAME" = "push" ]; then
+          sudo apt-get update -y >/dev/null
+          sudo apt-get install -y jq >/dev/null
+
+          EVENT="${{ github.event_name }}"
+          REPO="${{ github.repository }}"
+          ACTOR="${{ github.actor }}"
+          REF_NAME="${{ github.ref_name }}"
+          SERVER_URL="${{ github.server_url }}"
+
+          if [ "$EVENT" = "push" ]; then
             COMPARE_URL="${SERVER_URL}/${REPO}/compare/${{ github.event.before }}...${{ github.sha }}"
-            TITLE="📌 代码更新 / Code Update"
-            DESC="**${REPO}**\n👤 ${ACTOR} pushed to **${REF_NAME}**\n🔗 ${COMPARE_URL}"
 
-            # 取最近 5 条 commit message
-            NOTES="$(printf '%s\n' '${{ toJson(github.event.commits) }}' \
-              | python3 -c 'import json,sys; c=json.loads(sys.stdin.read()); 
-                msgs=[x.get("message","") for x in c][:5];
-                print("\n".join([f"• {m.splitlines()[0]}" for m in msgs]) if msgs else "（无）")')"
+            NOTES=$(echo '${{ toJson(github.event.commits) }}' | jq -r '.[0:5] | map("• " + (.message|split("\n")[0])) | join("\n")')
+            [ -z "$NOTES" ] && NOTES="（无）"
 
-            payload=$(cat <<EOF
-          {
-            "username": "游戏更新提醒",
-            "embeds": [{
-              "title": "${TITLE}",
-              "description": "${DESC}",
-              "color": 5814783,
-              "fields": [{
-                "name": "📝 更新详情 / Update notes",
-                "value": "${NOTES}"
-              }],
-              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            }]
-          }
-          EOF
-          )
+            payload=$(jq -n \
+              --arg username "VIBECHECK" \
+              --arg title "✅ VIBECHECK 推送成功" \
+              --arg desc "**${REPO}**\n👤 ${ACTOR} pushed to **${REF_NAME}**\n🔗 ${COMPARE_URL}" \
+              --arg notes "$NOTES" \
+              '{
+                username: $username,
+                embeds: [{
+                  title: $title,
+                  description: $desc,
+                  color: 5814783,
+                  fields: [{name: "📝 提交内容 / Commits", value: $notes}],
+                  timestamp: (now | todateiso8601)
+                }]
+              }')
 
-          elif [ "$EVENT_NAME" = "release" ]; then
-            REL_NAME="${{ github.event.release.name }}"
-            REL_TAG="${{ github.event.release.tag_name }}"
-            REL_URL="${{ github.event.release.html_url }}"
+          elif [ "$EVENT" = "release" ]; then
+            REL_TAG='${{ github.event.release.tag_name }}'
+            REL_NAME='${{ github.event.release.name }}'
+            REL_URL='${{ github.event.release.html_url }}'
+            BODY_RAW='${{ github.event.release.body }}'
 
-            # Release Notes 可能很长，截断一下（Discord embed 有长度限制）
-            BODY="$(printf '%s' '${{ github.event.release.body }}' | head -c 900)"
+            BODY=$(printf "%s" "$BODY_RAW" | head -c 900)
             [ -z "$BODY" ] && BODY="（没有填写 Release Notes）"
 
-            TITLE="🎮 游戏更新了 / Game Updated"
-            DESC="**${REPO}** 发布新版本：**${REL_TAG}**\n${REL_NAME}\n🔗 ${REL_URL}"
-
-            payload=$(cat <<EOF
-          {
-            "username": "游戏更新提醒",
-            "embeds": [{
-              "title": "${TITLE}",
-              "description": "${DESC}",
-              "color": 5814783,
-              "fields": [{
-                "name": "📝 更改详情 / Update notes",
-                "value": "${BODY}"
-              }],
-              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            }]
-          }
-          EOF
-          )
+            payload=$(jq -n \
+              --arg username "VIBECHECK" \
+              --arg title "🚀 VIBECHECK 发布成功" \
+              --arg desc "**${REPO}** 发布新版本：**'"$REL_TAG"'**\n'"$REL_NAME"'\n🔗 '"$REL_URL"'' \
+              --arg notes "$BODY" \
+              '{
+                username: $username,
+                embeds: [{
+                  title: $title,
+                  description: $desc,
+                  color: 5814783,
+                  fields: [{name: "📝 更新说明 / Release notes", value: $notes}],
+                  timestamp: (now | todateiso8601)
+                }]
+              }')
           else
-            echo "Unsupported event: $EVENT_NAME"
+            echo "Skip: unsupported event $EVENT"
             exit 0
           fi
 
-          curl -sS -X POST \
+          echo "Sending to Discord..."
+          http_code=$(curl -sS -o /tmp/discord_resp.txt -w "%{http_code}" \
             -H "Content-Type: application/json" \
             -d "$payload" \
-            "$DISCORD_WEBHOOK_URL"
+            "$DISCORD_WEBHOOK_URL" || true)
+
+          echo "Discord HTTP code: $http_code"
+          echo "Discord response:"
+          cat /tmp/discord_resp.txt || true
+
+          if [ "$http_code" -lt 200 ] || [ "$http_code" -ge 300 ]; then
+            echo "ERROR: Discord webhook call failed"
+            exit 1
+          fi
