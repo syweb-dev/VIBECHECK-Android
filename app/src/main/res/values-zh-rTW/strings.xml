@@ -56,4 +56,11 @@
     <string name="frequency_daily">每日</string>
     <string name="frequency_monthly">每月</string>
     <string name="frequency_yearly">每年</string>
+    <string name="monthly_income">本月收入</string>
+    <string name="entry_saved">儲存成功</string>
+    <string name="analytics_empty_title">尚無分析資料</string>
+    <string name="analytics_empty_desc">先新增幾筆收支紀錄，圖表就會顯示你的趨勢。</string>
+    <string name="invalid_day_range">日期必須在 1 到 31 之間</string>
+    <string name="invalid_month_range">月份必須在 1 到 12 之間</string>
+    <string name="invalid_recurring_input">循環日期無效，請檢查日/月設定。</string>
 </resources>

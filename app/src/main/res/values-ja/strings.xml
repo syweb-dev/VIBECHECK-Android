@@ -57,4 +57,10 @@
     <string name="frequency_monthly">毎月</string>
     <string name="frequency_yearly">毎年</string>
     <string name="monthly_income">月間収入</string>
+    <string name="entry_saved">保存しました</string>
+    <string name="analytics_empty_title">分析データがまだありません</string>
+    <string name="analytics_empty_desc">収入/支出をいくつか追加すると、グラフに傾向が表示されます。</string>
+    <string name="invalid_day_range">日は 1〜31 の範囲で入力してください</string>
+    <string name="invalid_month_range">月は 1〜12 の範囲で入力してください</string>
+    <string name="invalid_recurring_input">繰り返し日付が無効です。日/月を確認してください。</string>
 </resources>

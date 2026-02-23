@@ -57,4 +57,10 @@
     <string name="frequency_monthly">매월</string>
     <string name="frequency_yearly">매년</string>
     <string name="monthly_income">월간 수입</string>
+    <string name="entry_saved">저장되었습니다</string>
+    <string name="analytics_empty_title">아직 분석 데이터가 없습니다</string>
+    <string name="analytics_empty_desc">수입/지출 내역을 몇 개 추가하면 그래프에 추세가 표시됩니다.</string>
+    <string name="invalid_day_range">일자는 1~31 사이여야 합니다</string>
+    <string name="invalid_month_range">월은 1~12 사이여야 합니다</string>
+    <string name="invalid_recurring_input">반복 날짜가 올바르지 않습니다. 일/월 값을 확인해 주세요.</string>
 </resources>

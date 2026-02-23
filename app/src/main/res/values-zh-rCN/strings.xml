@@ -57,4 +57,10 @@
     <string name="frequency_monthly">每月</string>
     <string name="frequency_yearly">每年</string>
     <string name="monthly_income">本月收入</string>
+    <string name="entry_saved">保存成功</string>
+    <string name="analytics_empty_title">暂无分析数据</string>
+    <string name="analytics_empty_desc">先添加几笔收支记录，图表会显示你的趋势。</string>
+    <string name="invalid_day_range">日期必须在 1 到 31 之间</string>
+    <string name="invalid_month_range">月份必须在 1 到 12 之间</string>
+    <string name="invalid_recurring_input">循环日期无效，请检查日/月设置。</string>
 </resources>
