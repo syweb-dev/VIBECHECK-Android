@@ -131,13 +131,15 @@ fun DashboardScreen(
             }
         }
     ) { paddingValues ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp)
         ) {
+            item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -154,7 +156,9 @@ fun DashboardScreen(
                     color = NeoWhite
                 )
             }
+            }
 
+            item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -283,32 +287,32 @@ fun DashboardScreen(
                     }
                 }
             }
+            }
 
+            item {
             VibeButton(
                 text = stringResource(id = R.string.view_analytics),
                 onClick = onNavigateToAnalytics,
                 color = NeoPurple,
                 modifier = Modifier.fillMaxWidth()
             )
+            }
 
+            item {
             Text(
                 text = stringResource(id = R.string.todays_moves),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 8.dp)
             )
+            }
 
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(bottom = 80.dp)
-            ) {
-                items(todayTransactions.sortedByDescending { it.date }) { transaction ->
-                    TransactionItem(
-                        transaction = transaction,
-                        currencySymbol = currencySymbol,
-                        onDelete = { viewModel.deleteTransaction(it.id) }
-                    )
-                }
+            items(todayTransactions.sortedByDescending { it.date }) { transaction ->
+                TransactionItem(
+                    transaction = transaction,
+                    currencySymbol = currencySymbol,
+                    onDelete = { viewModel.deleteTransaction(it.id) }
+                )
             }
         }
 
