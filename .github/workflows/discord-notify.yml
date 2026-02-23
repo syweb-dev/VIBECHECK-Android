@@ -13,16 +13,24 @@ jobs:
       - name: Send Discord notification
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        shell: bash
         run: |
-          set -euo pipefail
+          set -Eeuo pipefail
+          trap 'echo "❌ Failed at line $LINENO"; exit 2' ERR
+
+          echo "EVENT=${{ github.event_name }}"
+          echo "REPO=${{ github.repository }}"
+          echo "REF=${{ github.ref }}"
+          echo "REF_NAME=${{ github.ref_name }}"
 
           if [ -z "${DISCORD_WEBHOOK_URL:-}" ]; then
             echo "ERROR: Missing DISCORD_WEBHOOK_URL secret"
-            exit 1
+            exit 2
           fi
 
-          sudo apt-get update -y >/dev/null
-          sudo apt-get install -y jq >/dev/null
+          echo "Installing jq..."
+          sudo apt-get update -y
+          sudo apt-get install -y jq
 
           EVENT="${{ github.event_name }}"
           REPO="${{ github.repository }}"
@@ -32,7 +40,6 @@ jobs:
 
           if [ "$EVENT" = "push" ]; then
             COMPARE_URL="${SERVER_URL}/${REPO}/compare/${{ github.event.before }}...${{ github.sha }}"
-
             NOTES=$(echo '${{ toJson(github.event.commits) }}' | jq -r '.[0:5] | map("• " + (.message|split("\n")[0])) | join("\n")')
             [ -z "$NOTES" ] && NOTES="（无）"
 
@@ -81,6 +88,9 @@ jobs:
             exit 0
           fi
 
+          echo "Payload preview:"
+          echo "$payload" | jq .
+
           echo "Sending to Discord..."
           http_code=$(curl -sS -o /tmp/discord_resp.txt -w "%{http_code}" \
             -H "Content-Type: application/json" \
@@ -93,5 +103,7 @@ jobs:
 
           if [ "$http_code" -lt 200 ] || [ "$http_code" -ge 300 ]; then
             echo "ERROR: Discord webhook call failed"
-            exit 1
+            exit 2
           fi
+
+          echo "✅ Done"
