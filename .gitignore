@@ -6,10 +6,16 @@
 /.idea/modules.xml
 /.idea/workspace.xml
 /.idea/navEditor.xml
+/.trae
+/.kotlin
 /.idea/assetWizardSettings.xml
 .DS_Store
+/.DS_Store
 /build
 /captures
 .externalNativeBuild
 .cxx
 local.properties
+功能逻辑审查报告.md
+log.txt
+
