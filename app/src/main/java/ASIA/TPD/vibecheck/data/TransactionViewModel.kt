@@ -22,6 +22,8 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
 
     private val _budget = MutableStateFlow(0.0)
     val budget: StateFlow<Double> = _budget.asStateFlow()
+    private val _uiMessage = MutableStateFlow<String?>(null)
+    val uiMessage: StateFlow<String?> = _uiMessage.asStateFlow()
 
     init {
         loadTransactions()
@@ -84,5 +86,13 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
             _transactions.value = emptyList()
             _budget.value = 0.0
         }
+    }
+
+    fun postUiMessage(message: String) {
+        _uiMessage.value = message
+    }
+
+    fun consumeUiMessage() {
+        _uiMessage.value = null
     }
 }

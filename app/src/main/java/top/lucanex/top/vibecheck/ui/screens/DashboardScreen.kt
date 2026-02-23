@@ -21,6 +21,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.material3.Text
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +42,8 @@ import top.lucanex.top.vibecheck.ui.theme.*
 import top.lucanex.top.vibecheck.R
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.Currency
+import androidx.compose.ui.platform.LocalConfiguration
 
 @Composable
 fun DashboardScreen(
@@ -49,7 +54,19 @@ fun DashboardScreen(
 ) {
     val transactions by viewModel.transactions.collectAsState()
     val budget by viewModel.budget.collectAsState()
+    val uiMessage by viewModel.uiMessage.collectAsState()
     var showBudgetDialog by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val locale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
+    val currencySymbol = remember(locale) {
+        runCatching { Currency.getInstance(locale).getSymbol(locale) }.getOrDefault("$")
+    }
+
+    LaunchedEffect(uiMessage) {
+        val message = uiMessage ?: return@LaunchedEffect
+        snackbarHostState.showSnackbar(message)
+        viewModel.consumeUiMessage()
+    }
     
     val todayTransactions = remember(transactions) {
         transactions.filter { isToday(it.date) }
@@ -104,7 +121,15 @@ fun DashboardScreen(
                 color = NeoYellow
             )
         },
-        containerColor = NeoBackground
+        containerColor = NeoBackground,
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState) { data ->
+                Snackbar(
+                    containerColor = NeoYellow,
+                    contentColor = NeoBlack
+                ) { Text(data.visuals.message) }
+            }
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -185,7 +210,7 @@ fun DashboardScreen(
                                     
                                     // Display remaining amount (or overage) as the main large text
                                     Text(
-                                        text = if (isOver) "-${(currentMonthExpenses - budget).toInt()}" else "$remaining",
+                                        text = if (isOver) "-$currencySymbol${(currentMonthExpenses - budget).toInt()}" else "$currencySymbol$remaining",
                                         style = MaterialTheme.typography.headlineMedium,
                                         fontWeight = FontWeight.Black,
                                         color = if (isOver) Color.Red else Color.Unspecified
@@ -193,7 +218,7 @@ fun DashboardScreen(
                                     
                                     // Display total budget as smaller text
                                     Text(
-                                        text = stringResource(id = R.string.budget_amount, budget.toInt()),
+                                        text = stringResource(id = R.string.budget_amount, "$currencySymbol${budget.toInt()}"),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = NeoBlack.copy(alpha = 0.6f)
                                     )
@@ -228,7 +253,7 @@ fun DashboardScreen(
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "$${String.format(Locale.getDefault(), "%.0f", netSpending)}",
+                                text = "$currencySymbol${String.format(locale, "%.0f", netSpending)}",
                                 style = MaterialTheme.typography.displayMedium,
                                 fontWeight = FontWeight.Black
                             )
@@ -250,7 +275,7 @@ fun DashboardScreen(
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "$${currentMonthIncome.toInt()}",
+                                text = "$currencySymbol${currentMonthIncome.toInt()}",
                                 style = MaterialTheme.typography.displayMedium,
                                 fontWeight = FontWeight.Black
                             )
@@ -280,6 +305,7 @@ fun DashboardScreen(
                 items(todayTransactions.sortedByDescending { it.date }) { transaction ->
                     TransactionItem(
                         transaction = transaction,
+                        currencySymbol = currencySymbol,
                         onDelete = { viewModel.deleteTransaction(it.id) }
                     )
                 }
@@ -323,7 +349,7 @@ fun DashboardScreen(
 }
 
 @Composable
-fun TransactionItem(transaction: Transaction, onDelete: (Transaction) -> Unit) {
+fun TransactionItem(transaction: Transaction, currencySymbol: String, onDelete: (Transaction) -> Unit) {
     val amountColor = if (transaction.type == TransactionType.EXPENSE) Color.Red else Color(0xFF00C853)
     val amountPrefix = if (transaction.type == TransactionType.EXPENSE) "-" else "+"
     var showConfirm by remember { mutableStateOf(false) }
@@ -362,7 +388,7 @@ fun TransactionItem(transaction: Transaction, onDelete: (Transaction) -> Unit) {
 
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = "$amountPrefix$${transaction.amount}",
+                    text = "$amountPrefix$currencySymbol${transaction.amount}",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Black,
                     color = amountColor

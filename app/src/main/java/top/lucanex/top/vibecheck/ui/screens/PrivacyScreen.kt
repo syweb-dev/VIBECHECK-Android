@@ -69,11 +69,16 @@ fun PrivacyScreen(onBackClick: () -> Unit) {
 }
 
 private fun loadPrivacyText(context: Context, tag: String): String {
+    val language = tag.substringBefore('-')
+    val normalizedTag = when (tag.lowercase(Locale.ROOT)) {
+        "zh-hans", "zh-cn", "zh-sg" -> "zh-CN"
+        "zh-hant", "zh-tw", "zh-hk", "zh-mo" -> "zh-TW"
+        else -> tag
+    }
     val candidates = buildList {
-        add("privacy_${tag}.txt")
-        val language = tag.substringBefore('-')
+        add("privacy_${normalizedTag}.txt")
         add("privacy_${language}.txt")
-        add("privacy_zh-CN.txt")
+        add("privacy_en.txt")
     }
     for (name in candidates) {
         try {

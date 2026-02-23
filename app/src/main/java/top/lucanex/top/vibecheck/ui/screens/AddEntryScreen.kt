@@ -40,6 +40,9 @@ import top.lucanex.top.vibecheck.data.TransactionViewModel
 import top.lucanex.top.vibecheck.ui.components.MoodPicker
 import top.lucanex.top.vibecheck.ui.components.VibeButton
 import top.lucanex.top.vibecheck.ui.theme.*
+import androidx.compose.ui.platform.LocalConfiguration
+import java.util.Currency
+import java.util.Locale
 
 @Composable
 fun AddEntryScreen(
@@ -59,6 +62,10 @@ fun AddEntryScreen(
     var recurringMonth by remember { mutableStateOf("1") }
 
     val context = androidx.compose.ui.platform.LocalContext.current
+    val locale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
+    val currencySymbol = remember(locale) {
+        runCatching { Currency.getInstance(locale).getSymbol(locale) }.getOrDefault("$")
+    }
     val categories by remember {
         mutableStateOf(
             try {
@@ -88,7 +95,7 @@ fun AddEntryScreen(
             )
         }
         Text(
-            text = "$$amountStr",
+            text = "$currencySymbol$amountStr",
             fontSize = 48.sp,
             fontWeight = FontWeight.Bold,
             color = NeoBlack,
@@ -123,6 +130,13 @@ fun AddEntryScreen(
         }
 
         if (isRecurring) {
+            val dayInt = recurringDay.toIntOrNull()
+            val monthInt = recurringMonth.toIntOrNull()
+            val dayInvalid = (recurringFrequency == Frequency.MONTHLY || recurringFrequency == Frequency.YEARLY) &&
+                    (dayInt == null || dayInt !in 1..31)
+            val monthInvalid = recurringFrequency == Frequency.YEARLY &&
+                    (monthInt == null || monthInt !in 1..12)
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -156,8 +170,16 @@ fun AddEntryScreen(
                         label = { Text(stringResource(id = R.string.day_hint)) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
+                        singleLine = true,
+                        isError = dayInvalid
                     )
+                    if (dayInvalid) {
+                        Text(
+                            text = stringResource(id = R.string.invalid_day_range),
+                            color = Color.Red,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
                 }
                 
                 if (recurringFrequency == Frequency.YEARLY) {
@@ -167,8 +189,16 @@ fun AddEntryScreen(
                         label = { Text(stringResource(id = R.string.month_hint)) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
+                        singleLine = true,
+                        isError = monthInvalid
                     )
+                    if (monthInvalid) {
+                        Text(
+                            text = stringResource(id = R.string.invalid_month_range),
+                            color = Color.Red,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
                 }
             }
         }
@@ -215,12 +245,25 @@ fun AddEntryScreen(
             }
         }
 
-        val canSave = amountStr.toDoubleOrNull()?.let { it > 0.0 } == true
+        val amountValid = amountStr.toDoubleOrNull()?.let { it > 0.0 } == true
+        val dayInt = recurringDay.toIntOrNull()
+        val monthInt = recurringMonth.toIntOrNull()
+        val recurringInputValid = when {
+            !isRecurring -> true
+            recurringFrequency == Frequency.DAILY -> true
+            recurringFrequency == Frequency.MONTHLY -> dayInt != null && dayInt in 1..31
+            else -> (dayInt != null && dayInt in 1..31) && (monthInt != null && monthInt in 1..12)
+        }
+        val canSave = amountValid && recurringInputValid
         VibeButton(
             text = stringResource(id = R.string.save),
             onClick = {
                 val amount = amountStr.toDoubleOrNull() ?: 0.0
                 if (amount > 0) {
+                    if (!recurringInputValid) {
+                        viewModel.postUiMessage(context.getString(R.string.invalid_recurring_input))
+                        return@VibeButton
+                    }
                     val now = System.currentTimeMillis()
                     val transaction = Transaction(
                         date = now,
@@ -247,6 +290,7 @@ fun AddEntryScreen(
                         viewModel.addRecurringTransaction(rt)
                     }
 
+                    viewModel.postUiMessage(context.getString(R.string.entry_saved))
                     onNavigateBack()
                 }
             },

@@ -95,13 +95,6 @@ fun OnboardingScreen(
                             color = NeoBlack,
                             textAlign = TextAlign.Center
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = sysStr(R.string.onboarding_currency_note),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = NeoBlack,
-                            textAlign = TextAlign.Center
-                        )
                     }
                     1 -> {
                         Text(

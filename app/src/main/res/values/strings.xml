@@ -57,4 +57,10 @@
     <string name="frequency_monthly">Monthly</string>
     <string name="frequency_yearly">Yearly</string>
     <string name="monthly_income">Monthly Income</string>
+    <string name="entry_saved">Saved successfully</string>
+    <string name="analytics_empty_title">No analytics data yet</string>
+    <string name="analytics_empty_desc">Add a few income/expense entries first, then charts will show your trends.</string>
+    <string name="invalid_day_range">Day must be between 1 and 31</string>
+    <string name="invalid_month_range">Month must be between 1 and 12</string>
+    <string name="invalid_recurring_input">Recurring date is invalid. Please check day/month.</string>
 </resources>

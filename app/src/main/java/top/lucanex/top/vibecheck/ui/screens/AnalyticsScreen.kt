@@ -84,6 +84,18 @@ fun AnalyticsScreen(
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
+        if (transactions.isEmpty()) {
+            EmptyAnalyticsState()
+            Spacer(modifier = Modifier.height(32.dp))
+            VibeButton(
+                text = stringResource(id = R.string.back_to_dashboard),
+                onClick = onBackClick,
+                color = NeoYellow
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+            return@Column
+        }
+
         Text(
             text = stringResource(id = R.string.happiness_roi),
             fontSize = 20.sp,
@@ -120,6 +132,31 @@ fun AnalyticsScreen(
             color = NeoYellow
         )
         Spacer(modifier = Modifier.height(32.dp))
+    }
+}
+
+@Composable
+private fun EmptyAnalyticsState() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(2.dp, NeoBlack)
+            .background(NeoWhite)
+            .padding(20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = stringResource(id = R.string.analytics_empty_title),
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            color = NeoBlack
+        )
+        Text(
+            text = stringResource(id = R.string.analytics_empty_desc),
+            fontSize = 16.sp,
+            color = NeoBlack
+        )
     }
 }
 
