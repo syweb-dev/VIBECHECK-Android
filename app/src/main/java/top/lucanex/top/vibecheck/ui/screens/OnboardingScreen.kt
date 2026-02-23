@@ -57,7 +57,7 @@ fun OnboardingScreen(
     }
 
     val filePath = remember {
-        File(context.filesDir, "accounting_records.txt").absolutePath
+        File(context.filesDir, "accounting_records.json").absolutePath
     }
 
     Column(

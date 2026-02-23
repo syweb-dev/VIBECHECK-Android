@@ -19,7 +19,7 @@ Built with **Jetpack Compose** and designed with a bold **Neo-Brutalism** aesthe
     -   **Happiness ROI**: A scatter plot correlating spending with happiness.
     -   **Stupidity Tax**: Visualize how much money you wasted on bad mood impulses.
     -   **Spending Trends**: Track your daily expenses over the last 30 days.
--   **Privacy First**: All data is stored locally on your device in a simple text format (`accounting_records.txt`). No cloud, no tracking.
+-   **Privacy First**: All data is stored locally on your device in JSON format (`accounting_records.json`). No cloud, no tracking.
 
 ### Tech Stack
 -   **Language**: Kotlin
@@ -115,7 +115,7 @@ This software is licensed under the **MIT License**. See the [LICENSE](./LICENSE
     -   **快乐 ROI**: 关联支出与快乐值的散点图。
     -   **愚蠢税 (Stupidity Tax)**: 直观展示你在心情不好时冲动消费浪费了多少钱。
     -   **支出趋势**: 追踪过去 30 天的每日支出。
--   **隐私优先**: 所有数据以简单的文本格式 (`accounting_records.txt`) 本地存储在你的设备上。无云端同步，无追踪。
+-   **隐私优先**: 所有数据以 JSON 格式 (`accounting_records.json`) 本地存储在你的设备上。无云端同步，无追踪。
 
 ### 技术栈
 -   **语言**: Kotlin
@@ -211,7 +211,7 @@ This software is licensed under the **MIT License**. See the [LICENSE](./LICENSE
     -   **행복 ROI**: 지출과 행복의 상관관계를 보여주는 산점도.
     -   **멍청 비용 (Stupidity Tax)**: 기분이 나쁠 때 충동적으로 낭비한 돈이 얼마인지 시각화합니다.
     -   **지출 추세**: 지난 30일 동안의 일일 지출을 추적합니다.
--   **개인정보 보호 우선**: 모든 데이터는 장치에 간단한 텍스트 형식(`accounting_records.txt`)으로 로컬에 저장됩니다. 클라우드도, 추적도 없습니다.
+-   **개인정보 보호 우선**: 모든 데이터는 장치에 JSON 형식(`accounting_records.json`)으로 로컬에 저장됩니다. 클라우드도, 추적도 없습니다.
 
 ### 기술 스택
 -   **언어**: Kotlin

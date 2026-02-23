@@ -14,20 +14,177 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.json.JSONArray
+import org.json.JSONObject
 
 class FileRepository(private val context: Context) {
 
-    private val fileName = "accounting_records.txt"
-    private val budgetFileName = "budget.txt"
-    private val recurringFileName = "recurring.txt"
+    private val fileName = "accounting_records.json"
+    private val budgetFileName = "budget.json"
+    private val recurringFileName = "recurring.json"
+    private val legacyFileName = "accounting_records.txt"
+    private val legacyBudgetFileName = "budget.txt"
+    private val legacyRecurringFileName = "recurring.txt"
     private val ioMutex = Mutex()
+
+    private fun transactionToJson(t: Transaction): JSONObject {
+        return JSONObject().apply {
+            put("id", t.id)
+            put("date", t.date)
+            put("type", t.type.name)
+            put("amount", t.amount)
+            put("notes", t.notes)
+            put("mood", t.mood.score)
+        }
+    }
+
+    private fun transactionFromJson(obj: JSONObject): Transaction? {
+        val id = obj.optString("id").takeIf { it.isNotBlank() } ?: return null
+        val date = obj.optLong("date", Long.MIN_VALUE)
+        if (date == Long.MIN_VALUE) return null
+        val type = runCatching { TransactionType.valueOf(obj.optString("type", "EXPENSE")) }
+            .getOrDefault(TransactionType.EXPENSE)
+        val amount = if (obj.has("amount")) obj.optDouble("amount", Double.NaN) else Double.NaN
+        if (!amount.isFinite()) return null
+        val notes = obj.optString("notes", "")
+        val mood = Mood.fromScore(obj.optInt("mood", 3))
+        return Transaction(id, date, type, amount, notes, mood)
+    }
+
+    private fun recurringToJson(rt: RecurringTransaction): JSONObject {
+        return JSONObject().apply {
+            put("id", rt.id)
+            put("type", rt.type.name)
+            put("amount", rt.amount)
+            put("notes", rt.notes)
+            put("mood", rt.mood.score)
+            put("frequency", rt.frequency.name)
+            put("dayOfMonth", rt.dayOfMonth)
+            put("monthOfYear", rt.monthOfYear)
+            put("lastGeneratedTime", rt.lastGeneratedTime)
+        }
+    }
+
+    private fun recurringFromJson(obj: JSONObject): RecurringTransaction? {
+        val id = obj.optString("id").takeIf { it.isNotBlank() } ?: return null
+        val type = runCatching { TransactionType.valueOf(obj.optString("type", "EXPENSE")) }
+            .getOrDefault(TransactionType.EXPENSE)
+        val amount = if (obj.has("amount")) obj.optDouble("amount", Double.NaN) else Double.NaN
+        if (!amount.isFinite()) return null
+        val notes = obj.optString("notes", "")
+        val mood = Mood.fromScore(obj.optInt("mood", 3))
+        val freq = runCatching { Frequency.valueOf(obj.optString("frequency", "MONTHLY")) }
+            .getOrDefault(Frequency.MONTHLY)
+        val day = obj.optInt("dayOfMonth", 1)
+        val month = obj.optInt("monthOfYear", 1)
+        val lastGen = obj.optLong("lastGeneratedTime", 0L)
+        return RecurringTransaction(id, type, amount, notes, mood, freq, day, month, lastGen)
+    }
+
+    private fun readTransactions(file: File): MutableList<Transaction> {
+        val list = mutableListOf<Transaction>()
+        if (!file.exists()) return list
+        val text = file.readText().trim()
+        if (text.isBlank()) return list
+        val parsedJson = runCatching { JSONArray(text) }.getOrNull()
+        if (parsedJson != null) {
+            for (index in 0 until parsedJson.length()) {
+                val obj = parsedJson.optJSONObject(index) ?: continue
+                transactionFromJson(obj)?.let { list.add(it) }
+            }
+            return list
+        }
+        text.lineSequence().forEach { line ->
+            TransactionLineCodec.fromLineSafe(line)?.let { list.add(it) }
+        }
+        return list
+    }
+
+    private fun readRecurringTransactions(file: File): MutableList<RecurringTransaction> {
+        val list = mutableListOf<RecurringTransaction>()
+        if (!file.exists()) return list
+        val text = file.readText().trim()
+        if (text.isBlank()) return list
+        val parsedJson = runCatching { JSONArray(text) }.getOrNull()
+        if (parsedJson != null) {
+            for (index in 0 until parsedJson.length()) {
+                val obj = parsedJson.optJSONObject(index) ?: continue
+                recurringFromJson(obj)?.let { list.add(it) }
+            }
+            return list
+        }
+        text.lineSequence().forEach { line ->
+            RecurringLineCodec.fromLineSafe(line)?.let { list.add(it) }
+        }
+        return list
+    }
+
+    private fun writeTransactions(file: File, transactions: List<Transaction>) {
+        val jsonArray = JSONArray()
+        transactions.forEach { jsonArray.put(transactionToJson(it)) }
+        atomicWrite(file, jsonArray.toString())
+    }
+
+    private fun writeRecurring(file: File, recurringList: List<RecurringTransaction>) {
+        val jsonArray = JSONArray()
+        recurringList.forEach { jsonArray.put(recurringToJson(it)) }
+        atomicWrite(file, jsonArray.toString())
+    }
+
+    private fun atomicWrite(target: File, content: String) {
+        val tmp = File(context.filesDir, "${target.name}.tmp")
+        tmp.writeText(content)
+        try {
+            Files.move(
+                tmp.toPath(),
+                target.toPath(),
+                StandardCopyOption.REPLACE_EXISTING,
+                StandardCopyOption.ATOMIC_MOVE
+            )
+        } catch (e: Exception) {
+            tmp.copyTo(target, overwrite = true)
+            tmp.delete()
+        }
+    }
+
+    private fun migrateLegacyIfNeeded() {
+        val transactionFile = File(context.filesDir, fileName)
+        val legacyTransactionFile = File(context.filesDir, legacyFileName)
+        if (!transactionFile.exists() && legacyTransactionFile.exists()) {
+            val migrated = readTransactions(legacyTransactionFile)
+            writeTransactions(transactionFile, migrated)
+        }
+
+        val recurringFile = File(context.filesDir, recurringFileName)
+        val legacyRecurringFile = File(context.filesDir, legacyRecurringFileName)
+        if (!recurringFile.exists() && legacyRecurringFile.exists()) {
+            val migrated = readRecurringTransactions(legacyRecurringFile)
+            writeRecurring(recurringFile, migrated)
+        }
+
+        val budgetFile = File(context.filesDir, budgetFileName)
+        val legacyBudgetFile = File(context.filesDir, legacyBudgetFileName)
+        if (!budgetFile.exists() && legacyBudgetFile.exists()) {
+            val amount = legacyBudgetFile.readText().trim().toDoubleOrNull() ?: 0.0
+            val json = JSONObject().put("amount", amount)
+            atomicWrite(budgetFile, json.toString())
+        }
+    }
 
     suspend fun getBudget(): Double = withContext(Dispatchers.IO) {
         ioMutex.withLock {
+            migrateLegacyIfNeeded()
             val file = File(context.filesDir, budgetFileName)
             if (!file.exists()) return@withLock 0.0
             try {
-                file.readText().trim().toDoubleOrNull() ?: 0.0
+                val text = file.readText().trim()
+                if (text.isBlank()) return@withLock 0.0
+                val asJson = runCatching { JSONObject(text) }.getOrNull()
+                if (asJson != null) {
+                    asJson.optDouble("amount", 0.0)
+                } else {
+                    text.toDoubleOrNull() ?: 0.0
+                }
             } catch (e: Exception) {
                 0.0
             }
@@ -36,9 +193,11 @@ class FileRepository(private val context: Context) {
 
     suspend fun setBudget(amount: Double) = withContext(Dispatchers.IO) {
         ioMutex.withLock {
+            migrateLegacyIfNeeded()
             val file = File(context.filesDir, budgetFileName)
             try {
-                file.writeText(amount.toString())
+                val json = JSONObject().put("amount", amount)
+                atomicWrite(file, json.toString())
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -47,32 +206,27 @@ class FileRepository(private val context: Context) {
 
     suspend fun addRecurringTransaction(rt: RecurringTransaction) = withContext(Dispatchers.IO) {
         ioMutex.withLock {
+            migrateLegacyIfNeeded()
             val file = File(context.filesDir, recurringFileName)
             try {
-                val line = RecurringLineCodec.toLine(rt)
-                file.appendText(line + "\n")
+                val list = readRecurringTransactions(file)
+                list.add(rt)
+                writeRecurring(file, list)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
     }
 
-    private fun readRecurringTransactions(file: File): MutableList<RecurringTransaction> {
-         val list = mutableListOf<RecurringTransaction>()
-         if (!file.exists()) return list
-         file.forEachLine { line ->
-             RecurringLineCodec.fromLineSafe(line)?.let { list.add(it) }
-         }
-         return list
-    }
-
     suspend fun checkAndGenerateRecurringTransactions() = withContext(Dispatchers.IO) {
         ioMutex.withLock {
+            migrateLegacyIfNeeded()
             val rFile = File(context.filesDir, recurringFileName)
             if (!rFile.exists()) return@withLock
 
             val recurringList = readRecurringTransactions(rFile)
             val tFile = File(context.filesDir, fileName)
+            val transactionList = readTransactions(tFile)
             var changesMade = false
             val now = System.currentTimeMillis()
             val calendar = java.util.Calendar.getInstance()
@@ -111,10 +265,6 @@ class FileRepository(private val context: Context) {
 
                 if (shouldGenerate) {
                     changesMade = true
-                    // Append directly to transaction file (we are already inside ioMutex lock)
-                    // But we should verify we aren't duplicating.
-                    // This logic assumes we only run this once per session or it's safe.
-                    // The mutex protects concurrent access.
                     val newTransaction = Transaction(
                         id = java.util.UUID.randomUUID().toString(),
                         date = now,
@@ -123,7 +273,7 @@ class FileRepository(private val context: Context) {
                         notes = rt.notes,
                         mood = rt.mood
                     )
-                    tFile.appendText(TransactionLineCodec.toLine(newTransaction) + "\n")
+                    transactionList.add(newTransaction)
                     rt.copy(lastGeneratedTime = now)
                 } else {
                     rt
@@ -131,22 +281,8 @@ class FileRepository(private val context: Context) {
             }
 
             if (changesMade) {
-                val tmp = File(context.filesDir, "${recurringFileName}.tmp")
-                tmp.writeText("")
-                updatedList.forEach { rt ->
-                    tmp.appendText(RecurringLineCodec.toLine(rt) + "\n")
-                }
-                try {
-                    Files.move(
-                        tmp.toPath(),
-                        rFile.toPath(),
-                        StandardCopyOption.REPLACE_EXISTING,
-                        StandardCopyOption.ATOMIC_MOVE
-                    )
-                } catch (e: Exception) {
-                    tmp.copyTo(rFile, overwrite = true)
-                    tmp.delete()
-                }
+                writeTransactions(tFile, transactionList)
+                writeRecurring(rFile, updatedList)
             }
         }
     }
@@ -170,14 +306,13 @@ class FileRepository(private val context: Context) {
 
     suspend fun getAllTransactions(): List<Transaction> = withContext(Dispatchers.IO) {
         ioMutex.withLock {
+            migrateLegacyIfNeeded()
             val file = File(context.filesDir, fileName)
             if (!file.exists()) return@withLock emptyList()
 
             val transactions = mutableListOf<Transaction>()
             try {
-                file.forEachLine { line ->
-                    TransactionLineCodec.fromLineSafe(line)?.let { transactions.add(it) }
-                }
+                transactions.addAll(readTransactions(file))
             } catch (e: IOException) {
                 e.printStackTrace()
             }
@@ -187,10 +322,12 @@ class FileRepository(private val context: Context) {
 
     suspend fun addTransaction(transaction: Transaction) = withContext(Dispatchers.IO) {
         ioMutex.withLock {
+            migrateLegacyIfNeeded()
             val file = File(context.filesDir, fileName)
             try {
-                val line = TransactionLineCodec.toLine(transaction)
-                file.appendText(line + "\n")
+                val list = readTransactions(file)
+                list.add(transaction)
+                writeTransactions(file, list)
             } catch (e: IOException) {
                 e.printStackTrace()
             }
@@ -199,31 +336,12 @@ class FileRepository(private val context: Context) {
 
     suspend fun deleteTransaction(id: String) = withContext(Dispatchers.IO) {
         ioMutex.withLock {
+            migrateLegacyIfNeeded()
             val file = File(context.filesDir, fileName)
             if (!file.exists()) return@withLock
             try {
-                val tmp = File(context.filesDir, "${fileName}.tmp")
-                tmp.writeText("")
-                file.forEachLine { line ->
-                    val keep = line.substringBefore("|") != id
-                    if (keep) tmp.appendText(line + if (line.endsWith("\n")) "" else "\n")
-                }
-                try {
-                    Files.move(
-                        tmp.toPath(),
-                        file.toPath(),
-                        StandardCopyOption.REPLACE_EXISTING,
-                        StandardCopyOption.ATOMIC_MOVE
-                    )
-                } catch (e: Exception) {
-                    try {
-                        tmp.copyTo(file, overwrite = true)
-                        tmp.delete()
-                    } catch (e2: Exception) {
-                        e2.printStackTrace()
-                        throw e2
-                    }
-                }
+                val list = readTransactions(file).filterNot { it.id == id }
+                writeTransactions(file, list)
             } catch (e: IOException) {
                 e.printStackTrace()
             }
@@ -232,18 +350,20 @@ class FileRepository(private val context: Context) {
 
     suspend fun clearAll() = withContext(Dispatchers.IO) {
         ioMutex.withLock {
+            migrateLegacyIfNeeded()
             val file = File(context.filesDir, fileName)
             val budgetFile = File(context.filesDir, budgetFileName)
             val recurringFile = File(context.filesDir, recurringFileName)
             try {
                 if (file.exists()) {
-                    file.writeText("")
+                    writeTransactions(file, emptyList())
                 }
                 if (budgetFile.exists()) {
-                    budgetFile.writeText("0.0")
+                    val json = JSONObject().put("amount", 0.0)
+                    atomicWrite(budgetFile, json.toString())
                 }
                 if (recurringFile.exists()) {
-                    recurringFile.writeText("")
+                    writeRecurring(recurringFile, emptyList())
                 }
             } catch (e: IOException) {
                 e.printStackTrace()
