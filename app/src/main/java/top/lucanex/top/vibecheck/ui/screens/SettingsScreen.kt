@@ -245,6 +245,12 @@ fun SettingsScreen(
                 color = NeoBlack
             )
 
+            Text(
+                text = stringResource(id = R.string.version_text, "1.2"),
+                style = MaterialTheme.typography.labelSmall,
+                color = NeoBlack
+            )
+
             Spacer(modifier = Modifier.weight(1f))
         }
     }

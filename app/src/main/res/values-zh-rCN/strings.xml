@@ -29,6 +29,7 @@
     <string name="type_delete_hint">输入“delete”以确认</string>
     <string name="confirm_reset">确认重置</string>
     <string name="reset_success">重置成功</string>
+    <string name="version_text">版本 %1$s</string>
     <string name="copyright">本软件基于 MIT 许可证发布。</string>
     <string name="onboarding_welcome_title">欢迎使用 VibeCheck</string>
     <string name="onboarding_welcome_desc">高饱和度、情感驱动的财务日记。追踪你的快乐回报率。</string>
