@@ -251,6 +251,24 @@ fun SettingsScreen(
                 color = NeoBlack
             )
 
+            Text(
+                text = stringResource(id = R.string.social_youtube, "LucaNex-m2p"),
+                style = MaterialTheme.typography.labelSmall,
+                color = NeoBlack
+            )
+
+            Text(
+                text = stringResource(id = R.string.social_x, "@wnghoshui3"),
+                style = MaterialTheme.typography.labelSmall,
+                color = NeoBlack
+            )
+
+            Text(
+                text = stringResource(id = R.string.social_website, "lucanex.top"),
+                style = MaterialTheme.typography.labelSmall,
+                color = NeoBlack
+            )
+
             Spacer(modifier = Modifier.weight(1f))
         }
     }
