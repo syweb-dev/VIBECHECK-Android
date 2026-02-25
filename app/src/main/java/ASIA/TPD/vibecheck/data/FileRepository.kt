@@ -16,6 +16,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.Calendar
 
 class FileRepository(private val context: Context) {
 
@@ -26,6 +27,12 @@ class FileRepository(private val context: Context) {
     private val legacyBudgetFileName = "budget.txt"
     private val legacyRecurringFileName = "recurring.txt"
     private val ioMutex = Mutex()
+
+    private data class BudgetData(
+        val amount: Double,
+        val autoResetDay: Int,
+        val lastResetPeriod: String
+    )
 
     private fun transactionToJson(t: Transaction): JSONObject {
         return JSONObject().apply {
@@ -147,6 +154,62 @@ class FileRepository(private val context: Context) {
         }
     }
 
+    private fun currentBudgetPeriod(): String {
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH) + 1
+        return String.format("%04d-%02d", year, month)
+    }
+
+    private fun readBudgetData(file: File): BudgetData {
+        if (!file.exists()) {
+            return BudgetData(amount = 0.0, autoResetDay = 1, lastResetPeriod = currentBudgetPeriod())
+        }
+        val text = file.readText().trim()
+        if (text.isBlank()) {
+            return BudgetData(amount = 0.0, autoResetDay = 1, lastResetPeriod = currentBudgetPeriod())
+        }
+
+        val asJson = runCatching { JSONObject(text) }.getOrNull()
+        if (asJson != null) {
+            val amount = asJson.optDouble("amount", 0.0)
+            val autoResetDay = asJson.optInt("autoResetDay", 1).coerceIn(1, 31)
+            val lastResetPeriod = asJson.optString("lastResetPeriod", currentBudgetPeriod())
+                .ifBlank { currentBudgetPeriod() }
+            return BudgetData(
+                amount = if (amount.isFinite()) amount else 0.0,
+                autoResetDay = autoResetDay,
+                lastResetPeriod = lastResetPeriod
+            )
+        }
+
+        val amount = text.toDoubleOrNull() ?: 0.0
+        return BudgetData(amount = amount, autoResetDay = 1, lastResetPeriod = currentBudgetPeriod())
+    }
+
+    private fun writeBudgetData(file: File, budgetData: BudgetData) {
+        val json = JSONObject()
+            .put("amount", budgetData.amount)
+            .put("autoResetDay", budgetData.autoResetDay.coerceIn(1, 31))
+            .put("lastResetPeriod", budgetData.lastResetPeriod)
+        atomicWrite(file, json.toString())
+    }
+
+    private fun applyBudgetAutoReset(file: File, budgetData: BudgetData): BudgetData {
+        val calendar = Calendar.getInstance()
+        val currentPeriod = currentBudgetPeriod()
+        val maxDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+        val resetDayThisMonth = budgetData.autoResetDay.coerceIn(1, 31).coerceAtMost(maxDay)
+        val currentDay = calendar.get(Calendar.DAY_OF_MONTH)
+        val shouldReset = currentDay >= resetDayThisMonth && budgetData.lastResetPeriod != currentPeriod
+
+        if (!shouldReset) return budgetData
+
+        val resetBudget = budgetData.copy(amount = 0.0, lastResetPeriod = currentPeriod)
+        writeBudgetData(file, resetBudget)
+        return resetBudget
+    }
+
     private fun migrateLegacyIfNeeded() {
         val transactionFile = File(context.filesDir, fileName)
         val legacyTransactionFile = File(context.filesDir, legacyFileName)
@@ -166,8 +229,14 @@ class FileRepository(private val context: Context) {
         val legacyBudgetFile = File(context.filesDir, legacyBudgetFileName)
         if (!budgetFile.exists() && legacyBudgetFile.exists()) {
             val amount = legacyBudgetFile.readText().trim().toDoubleOrNull() ?: 0.0
-            val json = JSONObject().put("amount", amount)
-            atomicWrite(budgetFile, json.toString())
+            writeBudgetData(
+                budgetFile,
+                BudgetData(
+                    amount = amount,
+                    autoResetDay = 1,
+                    lastResetPeriod = currentBudgetPeriod()
+                )
+            )
         }
     }
 
@@ -175,29 +244,57 @@ class FileRepository(private val context: Context) {
         ioMutex.withLock {
             migrateLegacyIfNeeded()
             val file = File(context.filesDir, budgetFileName)
-            if (!file.exists()) return@withLock 0.0
             try {
-                val text = file.readText().trim()
-                if (text.isBlank()) return@withLock 0.0
-                val asJson = runCatching { JSONObject(text) }.getOrNull()
-                if (asJson != null) {
-                    asJson.optDouble("amount", 0.0)
-                } else {
-                    text.toDoubleOrNull() ?: 0.0
-                }
+                val budgetData = applyBudgetAutoReset(file, readBudgetData(file))
+                budgetData.amount
             } catch (e: Exception) {
                 0.0
             }
         }
     }
 
-    suspend fun setBudget(amount: Double) = withContext(Dispatchers.IO) {
+    suspend fun getBudgetResetDay(): Int = withContext(Dispatchers.IO) {
         ioMutex.withLock {
             migrateLegacyIfNeeded()
             val file = File(context.filesDir, budgetFileName)
             try {
-                val json = JSONObject().put("amount", amount)
-                atomicWrite(file, json.toString())
+                val budgetData = applyBudgetAutoReset(file, readBudgetData(file))
+                budgetData.autoResetDay
+            } catch (e: Exception) {
+                1
+            }
+        }
+    }
+
+    suspend fun setBudget(amount: Double, autoResetDay: Int) = withContext(Dispatchers.IO) {
+        ioMutex.withLock {
+            migrateLegacyIfNeeded()
+            val file = File(context.filesDir, budgetFileName)
+            try {
+                writeBudgetData(
+                    file,
+                    BudgetData(
+                        amount = amount,
+                        autoResetDay = autoResetDay.coerceIn(1, 31),
+                        lastResetPeriod = currentBudgetPeriod()
+                    )
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    suspend fun clearBudgetOnly() = withContext(Dispatchers.IO) {
+        ioMutex.withLock {
+            migrateLegacyIfNeeded()
+            val file = File(context.filesDir, budgetFileName)
+            try {
+                val current = readBudgetData(file)
+                writeBudgetData(
+                    file,
+                    current.copy(amount = 0.0, lastResetPeriod = currentBudgetPeriod())
+                )
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -359,8 +456,14 @@ class FileRepository(private val context: Context) {
                     writeTransactions(file, emptyList())
                 }
                 if (budgetFile.exists()) {
-                    val json = JSONObject().put("amount", 0.0)
-                    atomicWrite(budgetFile, json.toString())
+                    writeBudgetData(
+                        budgetFile,
+                        BudgetData(
+                            amount = 0.0,
+                            autoResetDay = 1,
+                            lastResetPeriod = currentBudgetPeriod()
+                        )
+                    )
                 }
                 if (recurringFile.exists()) {
                     writeRecurring(recurringFile, emptyList())

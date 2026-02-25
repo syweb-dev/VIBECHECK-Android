@@ -49,6 +49,8 @@
     <string name="budget_left">剩余: %1$s</string>
     <string name="set_budget_title">设置月度预算</string>
     <string name="amount_hint">金额</string>
+    <string name="budget_reset_day_hint">自动清零日 (1-31)</string>
+    <string name="clear_budget_only">仅清空预算</string>
     <string name="edit_budget_desc">编辑预算</string>
     <string name="fixed_recurring">固定 / 周期性</string>
     <string name="day_hint">日 (1-31)</string>

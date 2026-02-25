@@ -22,6 +22,8 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
 
     private val _budget = MutableStateFlow(0.0)
     val budget: StateFlow<Double> = _budget.asStateFlow()
+    private val _budgetResetDay = MutableStateFlow(1)
+    val budgetResetDay: StateFlow<Int> = _budgetResetDay.asStateFlow()
     private val _uiMessage = MutableStateFlow<String?>(null)
     val uiMessage: StateFlow<String?> = _uiMessage.asStateFlow()
 
@@ -40,6 +42,7 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
     private fun loadBudget() {
         viewModelScope.launch(Dispatchers.IO) {
             _budget.value = repository.getBudget()
+            _budgetResetDay.value = repository.getBudgetResetDay()
         }
     }
 
@@ -66,10 +69,19 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
-    fun setBudget(amount: Double) {
+    fun setBudget(amount: Double, autoResetDay: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.setBudget(amount)
+            repository.setBudget(amount, autoResetDay)
             _budget.value = amount
+            _budgetResetDay.value = autoResetDay.coerceIn(1, 31)
+        }
+    }
+
+    fun clearBudgetOnly() {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.clearBudgetOnly()
+            _budget.value = 0.0
+            _budgetResetDay.value = repository.getBudgetResetDay()
         }
     }
 
@@ -85,6 +97,7 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
             repository.clearAll()
             _transactions.value = emptyList()
             _budget.value = 0.0
+            _budgetResetDay.value = 1
         }
     }
 

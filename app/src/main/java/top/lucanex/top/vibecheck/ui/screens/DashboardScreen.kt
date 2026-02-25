@@ -54,6 +54,7 @@ fun DashboardScreen(
 ) {
     val transactions by viewModel.transactions.collectAsState()
     val budget by viewModel.budget.collectAsState()
+    val budgetResetDay by viewModel.budgetResetDay.collectAsState()
     val uiMessage by viewModel.uiMessage.collectAsState()
     var showBudgetDialog by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -318,26 +319,56 @@ fun DashboardScreen(
 
         if (showBudgetDialog) {
             var budgetInput by remember { mutableStateOf(if (budget > 0) budget.toString() else "") }
+            var resetDayInput by remember { mutableStateOf(budgetResetDay.toString()) }
+            val resetDayInvalid = resetDayInput.toIntOrNull()?.let { it !in 1..31 } ?: true
             AlertDialog(
                 onDismissRequest = { showBudgetDialog = false },
                 title = { Text(stringResource(id = R.string.set_budget_title)) },
                 text = {
-                    OutlinedTextField(
-                        value = budgetInput,
-                        onValueChange = { if (it.all { c -> c.isDigit() || c == '.' }) budgetInput = it },
-                        label = { Text(stringResource(id = R.string.amount_hint)) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true
-                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        OutlinedTextField(
+                            value = budgetInput,
+                            onValueChange = { if (it.all { c -> c.isDigit() || c == '.' }) budgetInput = it },
+                            label = { Text(stringResource(id = R.string.amount_hint)) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            singleLine = true
+                        )
+                        OutlinedTextField(
+                            value = resetDayInput,
+                            onValueChange = { if (it.all { c -> c.isDigit() }) resetDayInput = it },
+                            label = { Text(stringResource(id = R.string.budget_reset_day_hint)) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            singleLine = true,
+                            isError = resetDayInvalid
+                        )
+                        if (resetDayInvalid) {
+                            Text(
+                                text = stringResource(id = R.string.invalid_day_range),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.Red
+                            )
+                        }
+                        VibeButton(
+                            text = stringResource(id = R.string.clear_budget_only),
+                            onClick = {
+                                viewModel.clearBudgetOnly()
+                                showBudgetDialog = false
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            color = NeoPink
+                        )
+                    }
                 },
                 confirmButton = {
                     VibeButton(
                         text = stringResource(id = R.string.save),
                         onClick = {
                             val newBudget = budgetInput.toDoubleOrNull() ?: 0.0
-                            viewModel.setBudget(newBudget)
+                            val resetDay = resetDayInput.toIntOrNull()?.coerceIn(1, 31) ?: 1
+                            viewModel.setBudget(newBudget, resetDay)
                             showBudgetDialog = false
                         },
+                        enabled = !resetDayInvalid,
                         color = NeoYellow
                     )
                 },

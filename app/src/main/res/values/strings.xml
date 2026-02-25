@@ -49,6 +49,8 @@
     <string name="budget_left">Left: %1$s</string>
     <string name="set_budget_title">Set Monthly Budget</string>
     <string name="amount_hint">Amount</string>
+    <string name="budget_reset_day_hint">Auto reset day (1-31)</string>
+    <string name="clear_budget_only">Clear budget only</string>
     <string name="edit_budget_desc">Edit Budget</string>
     <string name="fixed_recurring">Fixed / Recurring</string>
     <string name="day_hint">Day (1-31)</string>
